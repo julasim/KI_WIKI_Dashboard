@@ -24,16 +24,14 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
 
-# Non-root User für Sicherheit
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nextjs -u 1001 -G nodejs
-
 # Standalone-Output enthält Server + minimal node_modules
-COPY --from=builder --chown=nextjs:nodejs /build/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /build/.next/static ./.next/static
-COPY --from=builder --chown=nextjs:nodejs /build/public ./public
+COPY --from=builder /build/.next/standalone ./
+COPY --from=builder /build/.next/static ./.next/static
+COPY --from=builder /build/public ./public
 
-USER nextjs
+# Läuft als root — Vault wird read-only gemountet (siehe docker-compose.yml),
+# daher kein Write-Risiko. Non-root-User würde Permission-Probleme bringen
+# da der Vault auf dem VPS root-owned ist.
 EXPOSE 3000
 
 CMD ["node", "server.js"]
