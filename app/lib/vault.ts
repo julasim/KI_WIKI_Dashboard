@@ -424,7 +424,8 @@ export type ProjectNote = {
   id: string;
   title: string;
   date?: string;
-  body: string;
+  body: string;       // raw markdown (for fallback / debugging)
+  bodyHtml: string;   // pre-rendered HTML
   tags: string[];
 };
 
@@ -434,6 +435,7 @@ export type ProjectMeeting = {
   date?: string;
   attendees: string[];
   body: string;
+  bodyHtml: string;
 };
 
 async function readProjectFolderItems(
@@ -468,12 +470,33 @@ async function readProjectFolderItems(
 
 export async function readProjectNotes(projectSlug: string): Promise<ProjectNote[]> {
   const items = await readProjectFolderItems(projectSlug, "notes");
-  return items.map((i) => ({ id: i.id, title: i.title, date: i.date, body: i.body, tags: i.tags }));
+  // Markdown → HTML auf Server (gleiche Page-Render)
+  const { mdToHtml } = await import("./markdown");
+  return Promise.all(
+    items.map(async (i) => ({
+      id: i.id,
+      title: i.title,
+      date: i.date,
+      body: i.body,
+      bodyHtml: await mdToHtml(i.body),
+      tags: i.tags,
+    })),
+  );
 }
 
 export async function readProjectMeetings(projectSlug: string): Promise<ProjectMeeting[]> {
   const items = await readProjectFolderItems(projectSlug, "meetings");
-  return items.map((i) => ({ id: i.id, title: i.title, date: i.date, attendees: i.attendees, body: i.body }));
+  const { mdToHtml } = await import("./markdown");
+  return Promise.all(
+    items.map(async (i) => ({
+      id: i.id,
+      title: i.title,
+      date: i.date,
+      attendees: i.attendees,
+      body: i.body,
+      bodyHtml: await mdToHtml(i.body),
+    })),
+  );
 }
 
 // ─── Reminders ──────────────────────────────────────────────

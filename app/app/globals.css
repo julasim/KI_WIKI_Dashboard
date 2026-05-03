@@ -218,9 +218,126 @@ html.dark .progress { background: var(--surface-2); }
 .no-scrollbar { scrollbar-width: none; }
 .no-scrollbar::-webkit-scrollbar { display: none; }
 
-/* Markdown link in vault content */
+/* ─── Markdown-Render für Vault-Inhalte ────────────────────── */
+.prose-vault {
+  color: var(--ink-2);
+  font-size: 14px;
+  line-height: 1.6;
+}
+.prose-vault > * + * { margin-top: 0.85em; }
+
+.prose-vault h1, .prose-vault h2, .prose-vault h3, .prose-vault h4 {
+  color: var(--ink);
+  font-family: 'Geist', sans-serif;
+  font-weight: 500;
+  letter-spacing: -0.025em;
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+}
+.prose-vault h1 { font-size: 1.5em; }
+.prose-vault h2 { font-size: 1.25em; }
+.prose-vault h3 { font-size: 1.1em; }
+.prose-vault h4 { font-size: 1em; }
+.prose-vault > h1:first-child,
+.prose-vault > h2:first-child,
+.prose-vault > h3:first-child { margin-top: 0; }
+
+.prose-vault p { margin: 0; }
+.prose-vault strong { color: var(--ink); font-weight: 600; }
+.prose-vault em { font-style: italic; }
+.prose-vault del { text-decoration: line-through; color: var(--ink-soft); }
+
 .prose-vault a {
   color: var(--info);
   text-decoration: none;
   border-bottom: 1px dashed var(--info);
+}
+.prose-vault a:hover { border-bottom-style: solid; }
+
+.prose-vault .vault-wikilink {
+  color: var(--ink);
+  background: var(--bg-2);
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-family: 'Geist Mono', monospace;
+  font-size: 0.92em;
+  text-decoration: none;
+}
+a.vault-wikilink:hover { background: var(--surface-2); }
+
+.prose-vault ul, .prose-vault ol {
+  padding-left: 1.4em;
+  margin: 0.5em 0;
+}
+.prose-vault ul { list-style: disc; }
+.prose-vault ol { list-style: decimal; }
+.prose-vault li { margin: 0.25em 0; }
+.prose-vault li > p { display: inline; }
+
+.prose-vault li.task-list-item {
+  list-style: none;
+  margin-left: -1.4em;
+  padding-left: 0;
+}
+.prose-vault li.task-list-item input[type="checkbox"] {
+  margin-right: 0.5em;
+  vertical-align: middle;
+}
+
+.prose-vault code {
+  background: var(--bg-2);
+  color: var(--ink);
+  padding: 0.1em 0.35em;
+  border-radius: 3px;
+  font-family: 'Geist Mono', monospace;
+  font-size: 0.9em;
+}
+.prose-vault pre {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  padding: 0.8em 1em;
+  border-radius: 6px;
+  overflow-x: auto;
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+.prose-vault pre code {
+  background: transparent;
+  padding: 0;
+  font-size: inherit;
+}
+
+.prose-vault blockquote {
+  border-left: 3px solid var(--border-2);
+  padding-left: 1em;
+  color: var(--ink-mute);
+  font-style: italic;
+}
+
+.prose-vault table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 13px;
+}
+.prose-vault th, .prose-vault td {
+  border: 1px solid var(--border);
+  padding: 0.4em 0.7em;
+  text-align: left;
+}
+.prose-vault th {
+  background: var(--bg-2);
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.prose-vault hr {
+  border: 0;
+  border-top: 1px solid var(--border);
+  margin: 1.5em 0;
+}
+
+.prose-vault img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 6px;
 }

@@ -110,9 +110,10 @@ export function ProjectDetailTabs({
                     ))}
                   </div>
                 )}
-                <pre className="mt-3 text-sm whitespace-pre-wrap font-sans text-[var(--ink-2)] leading-relaxed">
-                  {n.body}
-                </pre>
+                <div
+                  className="prose-vault mt-4"
+                  dangerouslySetInnerHTML={{ __html: n.bodyHtml }}
+                />
               </details>
             ))
           )}
@@ -144,9 +145,10 @@ export function ProjectDetailTabs({
                     ))}
                   </div>
                 )}
-                <pre className="mt-3 text-sm whitespace-pre-wrap font-sans text-[var(--ink-2)] leading-relaxed">
-                  {m.body}
-                </pre>
+                <div
+                  className="prose-vault mt-4"
+                  dangerouslySetInnerHTML={{ __html: m.bodyHtml }}
+                />
               </details>
             ))
           )}
