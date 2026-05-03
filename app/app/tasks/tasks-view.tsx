@@ -29,18 +29,10 @@ const BUCKET_LABEL: Record<DueBucket, string> = {
 type FilterStatus = "active" | "overdue" | "today" | "week" | "none";
 type GroupBy = "due" | "project" | "priority";
 
-export function TasksView({
-  tasks,
-  projectSlugs,
-}: {
-  tasks: Task[];
-  projectSlugs: string[];
-}) {
+export function TasksView({ tasks }: { tasks: Task[] }) {
   const todayISO = new Date().toISOString().slice(0, 10);
 
   const [filter, setFilter] = useState<FilterStatus>("active");
-  const [priorityFilter, setPriorityFilter] = useState<string>("all"); // all | urgent | high | medium | low
-  const [projectFilter, setProjectFilter] = useState<string>("all"); // all | <slug> | __none__
   const [groupBy, setGroupBy] = useState<GroupBy>("due");
 
   // Counters für Filter-Tabs
@@ -55,26 +47,15 @@ export function TasksView({
     };
   }, [tasks, todayISO]);
 
-  // Apply Filter + Priority + Project
+  // Apply Status-Filter
   const filtered = useMemo(() => {
     let list = tasks.filter((t) => t.status !== "done" && t.status !== "cancelled");
     if (filter === "overdue") list = list.filter((t) => dueBucket(t, todayISO) === "overdue");
     if (filter === "today") list = list.filter((t) => dueBucket(t, todayISO) === "today");
     if (filter === "week") list = list.filter((t) => ["overdue", "today", "week"].includes(dueBucket(t, todayISO)));
     if (filter === "none") list = list.filter((t) => !t.due);
-
-    if (priorityFilter !== "all") {
-      list = list.filter((t) => t.priority === priorityFilter);
-    }
-    if (projectFilter !== "all") {
-      if (projectFilter === "__none__") {
-        list = list.filter((t) => !t.project);
-      } else {
-        list = list.filter((t) => t.project === projectFilter);
-      }
-    }
     return list;
-  }, [tasks, todayISO, filter, priorityFilter, projectFilter]);
+  }, [tasks, todayISO, filter]);
 
   // Group + sort
   const groups = useMemo(() => {
@@ -148,62 +129,30 @@ export function TasksView({
         ))}
       </div>
 
-      {/* Filter-Dropdowns: Priorität + Projekt */}
-      <div className="flex flex-wrap items-center gap-3 pb-4 border-b hairline">
-        <div className="flex items-center gap-2 text-[12px] text-[var(--ink-mute)]">
-          <span className="num-mono">Priorität:</span>
-          <select
-            value={priorityFilter}
-            onChange={(e) => setPriorityFilter(e.target.value)}
-            className="btn h-8 text-[12px] px-2"
-          >
-            <option value="all">alle</option>
-            <option value="urgent">urgent</option>
-            <option value="high">high</option>
-            <option value="medium">medium</option>
-            <option value="low">low</option>
-          </select>
-        </div>
-        <div className="flex items-center gap-2 text-[12px] text-[var(--ink-mute)]">
-          <span className="num-mono">Projekt:</span>
-          <select
-            value={projectFilter}
-            onChange={(e) => setProjectFilter(e.target.value)}
-            className="btn h-8 text-[12px] px-2 max-w-[200px]"
-          >
-            <option value="all">alle</option>
-            <option value="__none__">ohne Projekt</option>
-            {projectSlugs.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="ml-auto flex items-center gap-2 text-[12px] text-[var(--ink-mute)]">
-          <span className="num-mono">gruppieren:</span>
-          <div className="flex items-center gap-0.5 p-0.5 rounded-lg border hairline">
-            {(
-              [
-                ["due", "Datum"],
-                ["project", "Projekt"],
-                ["priority", "Priorität"],
-              ] as const
-            ).map(([k, l]) => (
-              <button
-                key={k}
-                onClick={() => setGroupBy(k)}
-                className={cn(
-                  "px-2.5 h-6 rounded-md text-[11px] transition-colors",
-                  groupBy === k
-                    ? "bg-[var(--bg-2)] text-[var(--ink)]"
-                    : "hover:text-[var(--ink)] text-[var(--ink-mute)]",
-                )}
-              >
-                {l}
-              </button>
-            ))}
-          </div>
+      {/* Gruppieren-Toggle */}
+      <div className="flex items-center justify-end gap-2 text-[12px] text-[var(--ink-mute)] pb-4 border-b hairline">
+        <span className="num-mono">gruppieren:</span>
+        <div className="flex items-center gap-0.5 p-0.5 rounded-lg border hairline">
+          {(
+            [
+              ["due", "Datum"],
+              ["project", "Projekt"],
+              ["priority", "Priorität"],
+            ] as const
+          ).map(([k, l]) => (
+            <button
+              key={k}
+              onClick={() => setGroupBy(k)}
+              className={cn(
+                "px-2.5 h-6 rounded-md text-[11px] transition-colors",
+                groupBy === k
+                  ? "bg-[var(--bg-2)] text-[var(--ink)]"
+                  : "hover:text-[var(--ink)] text-[var(--ink-mute)]",
+              )}
+            >
+              {l}
+            </button>
+          ))}
         </div>
       </div>
 
