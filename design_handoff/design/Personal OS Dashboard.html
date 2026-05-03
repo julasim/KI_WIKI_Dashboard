@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="de" class="h-full">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#fafaf9" />
+<title>Personal OS — Dashboard</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;450;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+<script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          sans: ['Geist', 'system-ui', '-apple-system', 'sans-serif'],
+          mono: ['Geist Mono', 'ui-monospace', 'monospace'],
+        },
+      },
+    },
+  };
+</script>
+
+<style>
+  :root {
+    /* Light — paper/zinc */
+    --bg:        #fafaf9;
+    --bg-2:      #f4f4f3;
+    --surface:   #ffffff;
+    --surface-2: #f8f8f7;
+    --border:    rgba(20,20,18,0.08);
+    --border-2:  rgba(20,20,18,0.14);
+    --ink:       #18181b;
+    --ink-2:     #3f3f46;
+    --ink-mute:  #71717a;
+    --ink-soft:  #a1a1aa;
+
+    /* Status — desaturated for monochrome calm */
+    --ok:    #16a34a;   /* emerald 600 */
+    --warn:  #d97706;   /* amber 600 */
+    --bad:   #dc2626;   /* red 600 */
+    --info:  #2563eb;   /* blue 600 */
+
+    /* Heatmap */
+    --hm-empty: #ececea;
+    --hm-skip:  #e7e7e5;
+    --hm-ok:    #18181b;
+    --hm-bad:   #f5e6e6;
+    --hm-bad-border: #e6b4b4;
+    --hm-today: #2563eb;
+  }
+  html.dark {
+    --bg:        #0c0c0d;
+    --bg-2:      #131315;
+    --surface:   #161618;
+    --surface-2: #1c1c1f;
+    --border:    rgba(255,255,255,0.08);
+    --border-2:  rgba(255,255,255,0.14);
+    --ink:       #fafafa;
+    --ink-2:     #d4d4d8;
+    --ink-mute:  #a1a1aa;
+    --ink-soft:  #71717a;
+
+    --ok:   #34d399;
+    --warn: #fbbf24;
+    --bad:  #f87171;
+    --info: #60a5fa;
+
+    --hm-empty: #232325;
+    --hm-skip:  #1e1e20;
+    --hm-ok:    #fafafa;
+    --hm-bad:   #3a1f1f;
+    --hm-bad-border: #6b3030;
+    --hm-today: #60a5fa;
+  }
+  html, body { background: var(--bg); color: var(--ink); }
+  body { font-family: 'Geist', system-ui, -apple-system, sans-serif; -webkit-font-smoothing: antialiased; font-feature-settings: "ss01", "cv11"; }
+
+  /* shadcn-style atoms */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; }
+  .card-flat { background: transparent; border: 0; }
+  .card-hover { transition: border-color .15s, background .15s; }
+  .card-hover:hover { border-color: var(--border-2); background: var(--surface-2); }
+  .hairline { border-color: var(--border); }
+  .hairline-2 { border-color: var(--border-2); }
+
+  .pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: 'Geist Mono', monospace;
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 999px;
+    border: 1px solid var(--border-2);
+    color: var(--ink-2);
+    background: var(--surface);
+    line-height: 1.4;
+  }
+  .pill-solid { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .pill .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    height: 36px;
+    padding: 0 14px;
+    border-radius: 10px;
+    border: 1px solid var(--border-2);
+    background: var(--surface);
+    color: var(--ink);
+    font-size: 13px;
+    font-weight: 500;
+    transition: background .12s, border-color .12s;
+    cursor: pointer;
+  }
+  .btn:hover { background: var(--surface-2); }
+  .btn-ghost { border-color: transparent; background: transparent; }
+  .btn-ghost:hover { background: var(--surface-2); border-color: var(--border); }
+
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    height: 36px; padding: 0 12px;
+    border-radius: 8px;
+    color: var(--ink-mute);
+    font-size: 13.5px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background .12s, color .12s;
+  }
+  .nav-item:hover { background: var(--surface-2); color: var(--ink); }
+  .nav-item.active { background: var(--bg-2); color: var(--ink); }
+  html.dark .nav-item.active { background: var(--surface-2); }
+
+  /* Section labels */
+  .eyebrow {
+    font-family: 'Geist Mono', monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.06em;
+    color: var(--ink-mute);
+    font-weight: 500;
+  }
+  .num-mono { font-family: 'Geist Mono', monospace; font-feature-settings: "tnum", "zero"; }
+  .serif    { font-family: 'Geist', sans-serif; font-weight: 450; letter-spacing: -0.025em; }
+  .display  { font-family: 'Geist', sans-serif; font-weight: 500; letter-spacing: -0.03em; }
+
+  /* Status fg/bg helpers */
+  .text-ok    { color: var(--ok); }
+  .text-warn  { color: var(--warn); }
+  .text-bad   { color: var(--bad); }
+  .text-info  { color: var(--info); }
+  .bg-ok-soft   { background: color-mix(in oklab, var(--ok) 14%, transparent); color: var(--ok); }
+  .bg-warn-soft { background: color-mix(in oklab, var(--warn) 16%, transparent); color: var(--warn); }
+  .bg-bad-soft  { background: color-mix(in oklab, var(--bad) 16%, transparent); color: var(--bad); }
+  .bg-info-soft { background: color-mix(in oklab, var(--info) 14%, transparent); color: var(--info); }
+
+  /* tiny progress bar */
+  .progress { height: 4px; border-radius: 999px; background: var(--bg-2); overflow: hidden; }
+  html.dark .progress { background: var(--surface-2); }
+  .progress > i { display: block; height: 100%; background: var(--ink); border-radius: 999px; }
+
+  /* heatmap cell base */
+  .hm-cell {
+    width: 100%; aspect-ratio: 1 / 1;
+    border-radius: 4px;
+    background: var(--hm-empty);
+  }
+  .hm-cell.ok    { background: var(--hm-ok); }
+  .hm-cell.bad   { background: var(--hm-bad); border: 1px solid var(--hm-bad-border); box-sizing: border-box; }
+  .hm-cell.skip  { background: var(--hm-skip); }
+  .hm-cell.today { outline: 2px solid var(--hm-today); outline-offset: 1px; }
+
+  /* hide scrollbar but keep scroll */
+  .no-scrollbar { scrollbar-width: none; }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+
+  /* link in markdown */
+  .prose-vault a { color: var(--info); text-decoration: none; border-bottom: 1px dashed var(--info); }
+</style>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/prop-types@15.8.1/prop-types.min.js"></script>
+<script src="https://unpkg.com/react-is@18.3.1/umd/react-is.production.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/recharts@2.12.7/umd/Recharts.min.js"></script>
+</head>
+<body class="h-full">
+<div id="root"></div>
+
+<script type="text/babel" src="dashboard/data.jsx"></script>
+<script type="text/babel" src="dashboard/icons.jsx"></script>
+<script type="text/babel" src="dashboard/shell.jsx"></script>
+<script type="text/babel" src="dashboard/page-today.jsx"></script>
+<script type="text/babel" src="dashboard/page-tasks.jsx"></script>
+<script type="text/babel" src="dashboard/page-projects.jsx"></script>
+<script type="text/babel" src="dashboard/page-project-detail.jsx"></script>
+<script type="text/babel" src="dashboard/page-wins.jsx"></script>
+<script type="text/babel" src="dashboard/page-reading.jsx"></script>
+<script type="text/babel" src="dashboard/page-habits.jsx"></script>
+<script type="text/babel" src="dashboard/page-sport.jsx"></script>
+<script type="text/babel" src="dashboard/page-goals.jsx"></script>
+<script type="text/babel" src="dashboard/app.jsx"></script>
+</body>
+</html>

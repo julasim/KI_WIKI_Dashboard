@@ -1,0 +1,34 @@
+# Next.js build output + caches
+app/.next/
+app/out/
+app/dist/
+
+# Dependencies
+app/node_modules/
+node_modules/
+
+# Local env (vault path etc — never commit secrets)
+app/.env.local
+app/.env*.local
+.env.local
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# OS / Editor
+.DS_Store
+*.swp
+*.swo
+.vscode/
+.idea/
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# Testing / Coverage
+/coverage

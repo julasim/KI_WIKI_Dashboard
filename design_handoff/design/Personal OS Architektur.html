@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Personal OS — Architektur</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500&family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    /* Neutral grayscale — cool-leaning, near-zero chroma */
+    --paper:    #f1f1ef;
+    --ink:      #161616;
+    --ink-2:    #2e2e2e;
+    --ink-mute: #6b6b6b;
+    --ink-soft: #9c9c9c;
+    --hair:     rgba(22,22,22,0.28);
+
+    /* Three grayscale ring tones — darkest core, lightest outer */
+    --kern:    #1f1f1f;   /* deepest charcoal */
+    --mittel:  #8a8a8a;   /* mid gray */
+    --aussen:  #c9c9c7;   /* light gray */
+    --front:   #e6e6e4;   /* almost-paper for chips */
+  }
+
+  html, body { margin: 0; padding: 0; background: #e7e7e5; }
+  body {
+    font-family: "IBM Plex Sans", system-ui, sans-serif;
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Stage / poster frame ───────────────────────────── */
+  .stage {
+    min-height: 100vh;
+    padding: 48px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+  }
+  .poster {
+    position: relative;
+    width: 1280px;
+    height: 1280px;
+    background: var(--paper);
+    box-shadow:
+      0 1px 0 rgba(28,26,23,0.04),
+      0 30px 80px -30px rgba(28,26,23,0.18);
+    overflow: hidden;
+  }
+  /* very faint paper texture */
+  .poster::before {
+    content: "";
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(120% 80% at 50% 0%, rgba(255,255,255,0.5), transparent 60%),
+      radial-gradient(140% 100% at 50% 100%, rgba(28,26,23,0.04), transparent 60%);
+    pointer-events: none;
+  }
+
+  /* ── Header ─────────────────────────────────────────── */
+  .head {
+    position: absolute;
+    left: 80px; right: 80px; top: 80px;
+    display: flex; justify-content: space-between; align-items: flex-start;
+    z-index: 4;
+  }
+  .head .eye {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    margin-bottom: 14px;
+  }
+  .head h1 {
+    font-family: "Fraunces", "Times New Roman", serif;
+    font-weight: 400;
+    font-style: normal;
+    font-size: 44px;
+    line-height: 1.05;
+    letter-spacing: -0.012em;
+    margin: 0;
+    color: var(--ink);
+    text-wrap: balance;
+    max-width: 620px;
+  }
+  .head .meta {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: var(--ink-mute);
+    text-align: right;
+    line-height: 2;
+  }
+  .head .meta strong { color: var(--ink); font-weight: 500; }
+
+  /* ── Footer ─────────────────────────────────────────── */
+  .foot {
+    position: absolute;
+    left: 80px; right: 80px; bottom: 60px;
+    display: flex; justify-content: space-between; align-items: center;
+    z-index: 4;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: var(--ink-mute);
+  }
+
+  /* ── Diagram stage ──────────────────────────────────── */
+  .diagram {
+    position: absolute;
+    left: 0; right: 0; top: 0; bottom: 0;
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  /* ── Side annotations ───────────────────────────────── */
+  .ann-col {
+    position: absolute;
+    z-index: 3;
+    width: 240px;
+  }
+  .ann-col .num {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    color: var(--ink-mute);
+    margin-bottom: 8px;
+  }
+  .ann-col .name {
+    font-family: "Fraunces", serif;
+    font-weight: 400;
+    font-size: 22px;
+    line-height: 1.15;
+    letter-spacing: -0.005em;
+    color: var(--ink);
+    margin: 0 0 10px 0;
+  }
+  .ann-col .desc {
+    font-family: "IBM Plex Sans", sans-serif;
+    font-weight: 400;
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: var(--ink-2);
+    margin: 0 0 14px 0;
+    text-wrap: pretty;
+  }
+  .ann-col ul {
+    margin: 0; padding: 0; list-style: none;
+  }
+  .ann-col ul li {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    color: var(--ink-2);
+    line-height: 1.85;
+    letter-spacing: 0.01em;
+  }
+  .ann-col ul li::before {
+    content: "—  ";
+    color: var(--ink-soft);
+  }
+
+  /* Both columns left-align for cleanest reading; left column gets a right-side
+     gutter so its leader pin sits on the inner edge. */
+  .ann-col.right { text-align: left; }
+  .ann-col.left  { text-align: left; }
+
+  /* ── Tiny hair-line connector accent dot ───────────── */
+  .ann-col .pin {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--ink);
+    display: inline-block;
+    margin-bottom: 4px;
+  }
+
+  /* ── Frontends band ─────────────────────────────────── */
+  .frontends {
+    position: absolute;
+    left: 80px; right: 80px;
+    bottom: 130px;
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .frontends .row-head {
+    display: flex; justify-content: space-between; align-items: baseline;
+    border-top: 1px solid var(--hair);
+    padding-top: 10px;
+  }
+  .frontends .row-head .num {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    color: var(--ink-mute);
+  }
+  .frontends .row-head .label {
+    font-family: "Fraunces", serif;
+    font-weight: 400;
+    font-size: 18px;
+    color: var(--ink);
+  }
+  .frontends .row-head .sub {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: var(--ink-mute);
+  }
+  .frontends .chips {
+    display: flex; gap: 10px; flex-wrap: wrap;
+  }
+  .frontends .chip {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.02em;
+    color: var(--ink);
+    padding: 8px 14px;
+    background: var(--front);
+    border: 1px solid var(--hair);
+    border-radius: 999px;
+  }
+
+  /* ── Ring labels rendered as <text> via SVG defs ────── */
+  /* (handled inline) */
+</style>
+</head>
+<body>
+
+<div class="stage">
+  <div class="poster">
+
+    <!-- Header -->
+    <div class="head">
+      <div>
+        <div class="eye">Personal OS · Architektur</div>
+        <h1>Ein Wissenssystem in vier&nbsp;Schichten.</h1>
+      </div>
+      <div class="meta">
+        <div>DOC&nbsp; <strong>POS-001</strong></div>
+        <div>REV&nbsp; <strong>2026-05</strong></div>
+      </div>
+    </div>
+
+    <!-- Diagram (rings) -->
+    <svg class="diagram" viewBox="0 0 1280 1280" preserveAspectRatio="xMidYMid meet">
+      <defs>
+        <!-- Curved paths for ring labels.
+             Each arc is offset OUTWARD from the band centerline so glyphs
+             (which descend below the baseline) sit cleanly inside their own ring.
+             Aussenring band: R 280–360, centerline 320 → use 340.
+             Mittelring band: R 180–280, centerline 230 → use 255. -->
+        <path id="arc-aussen"
+              d="M 300,640 A 340,340 0 0 1 980,640" />
+        <path id="arc-mittel"
+              d="M 385,640 A 255,255 0 0 1 895,640" />
+      </defs>
+
+      <!-- Rings: outermost first so inner ones paint over.
+           cx=640, cy=640. Outer R = 360, Mittel R = 280, Kern R = 180. -->
+
+      <!-- Aussenring band (donut between R=360 and R=280) -->
+      <path d="M 640,640 m -360,0 a 360,360 0 1 0 720,0 a 360,360 0 1 0 -720,0
+               M 640,640 m -280,0 a 280,280 0 1 1 560,0 a 280,280 0 1 1 -560,0"
+            fill="var(--aussen)" fill-rule="evenodd" />
+
+      <!-- Mittelring band (donut between R=280 and R=180) -->
+      <path d="M 640,640 m -280,0 a 280,280 0 1 0 560,0 a 280,280 0 1 0 -560,0
+               M 640,640 m -180,0 a 180,180 0 1 1 360,0 a 180,180 0 1 1 -360,0"
+            fill="var(--mittel)" fill-rule="evenodd" />
+
+      <!-- Kern disc -->
+      <circle cx="640" cy="640" r="180" fill="var(--kern)" />
+
+      <!-- Hairline boundaries -->
+      <circle cx="640" cy="640" r="360" fill="none" stroke="rgba(22,22,22,0.32)" stroke-width="1" />
+      <circle cx="640" cy="640" r="280" fill="none" stroke="rgba(22,22,22,0.20)" stroke-width="1" />
+      <circle cx="640" cy="640" r="180" fill="none" stroke="rgba(22,22,22,0.20)" stroke-width="1" />
+
+      <!-- Leader lines from rings out to side annotations -->
+      <!-- Kern → bottom-left annotation block (lands at top of "01 · KERN" line) -->
+      <line x1="492" y1="760" x2="310" y2="812" stroke="var(--ink)" stroke-width="1" opacity="0.55" />
+      <circle cx="310" cy="812" r="2.5" fill="var(--ink)" />
+      <!-- Mittelring → top-right annotation -->
+      <line x1="820" y1="488" x2="970" y2="292" stroke="var(--ink)" stroke-width="1" opacity="0.55" />
+      <circle cx="970" cy="292" r="2.5" fill="var(--ink)" />
+      <!-- Aussenring → top-left annotation -->
+      <line x1="430" y1="450" x2="290" y2="292" stroke="var(--ink)" stroke-width="1" opacity="0.55" />
+      <circle cx="290" cy="292" r="2.5" fill="var(--ink)" />
+
+      <!-- Ring labels along top arcs (centered on the arc).
+           dominant-baseline="middle" centers the cap-height vertically on the
+           arc; combined with the slightly-larger arc radii, this places each
+           label cleanly within its own band. -->
+      <text fill="#161616"
+            font-family="IBM Plex Mono, monospace"
+            font-weight="500"
+            font-size="12"
+            letter-spacing="5"
+            dominant-baseline="middle">
+        <textPath href="#arc-aussen" startOffset="50%" text-anchor="middle">03 · AUSSENRING · LLM-ANBIETER</textPath>
+      </text>
+      <text fill="#f1f1ef"
+            font-family="IBM Plex Mono, monospace"
+            font-weight="500"
+            font-size="11"
+            letter-spacing="4"
+            dominant-baseline="middle">
+        <textPath href="#arc-mittel" startOffset="50%" text-anchor="middle">02 · MITTELRING · REGELWERK</textPath>
+      </text>
+
+      <!-- Kern label — visually centered. Note: SVG letter-spacing adds trailing
+           space after the last glyph, which shifts the optical center to the right;
+           we compensate by reducing letter-spacing and trimming the trailing space. -->
+      <text x="640" y="622" text-anchor="middle"
+            font-family="IBM Plex Mono, monospace"
+            font-weight="500"
+            font-size="11"
+            fill="rgba(241,241,239,0.62)">01 · KERN</text>
+      <text x="640" y="664" text-anchor="middle"
+            font-family="Fraunces, serif"
+            font-weight="400"
+            font-size="40"
+            letter-spacing="-0.01em"
+            fill="#f1f1ef">Vault</text>
+      <text x="640" y="692" text-anchor="middle"
+            font-family="IBM Plex Mono, monospace"
+            font-size="10"
+            fill="rgba(241,241,239,0.55)">SINGLE SOURCE OF TRUTH</text>
+
+      <!-- Bidirectional flow arrow from frontends area into Kern -->
+      <g stroke="var(--ink)" stroke-width="1" fill="none" opacity="0.7">
+        <line x1="640" y1="1006" x2="640" y2="1056" stroke-dasharray="3 4" />
+        <polyline points="634,1014 640,1006 646,1014" />
+        <polyline points="634,1048 640,1056 646,1048" />
+      </g>
+    </svg>
+
+    <!-- Annotation: Aussenring (top-left) — top aligned with leader pin at y=292 -->
+    <div class="ann-col left" style="left: 80px; top: 292px; width: 220px;">
+      <div class="num">03 · AUSSENRING</div>
+      <div class="name">Austauschbare Rechenleistung.</div>
+      <div class="desc">Die LLM-Anbieter sind die äußerste Schicht — bewusst lose gekoppelt, bewusst ersetzbar. Kein Lock-in.</div>
+      <ul>
+        <li>Claude · heute</li>
+        <li>GPT · morgen</li>
+        <li>Gemini · vielleicht</li>
+        <li>Lokales Llama · später</li>
+      </ul>
+    </div>
+
+    <!-- Annotation: Mittelring (top-right) — top aligned with leader pin at y=292 -->
+    <div class="ann-col right" style="right: 80px; top: 292px; width: 240px;">
+      <div class="num">02 · MITTELRING</div>
+      <div class="name">Regeln, Logik, Werkzeuge.</div>
+      <div class="desc">Hier wohnt das Wissen darüber, wie der Vault funktioniert. Schemata, Pipelines, Prompts — verbinden Rohdaten mit den Modellen.</div>
+      <ul>
+        <li>SCHEMA.md · Frontmatter</li>
+        <li>PIPELINES.md · Workflows</li>
+        <li>System-Prompt</li>
+        <li>MCP-Server · Custom Tools</li>
+        <li>Validation, Auto-Linking</li>
+      </ul>
+    </div>
+
+    <!-- Annotation: Kern (bottom-left) — top edge aligned with leader pin at y=812 -->
+    <div class="ann-col left" style="left: 80px; top: 812px; width: 220px;">
+      <div class="num">01 · KERN</div>
+      <div class="name">Daten als Klartext.</div>
+      <div class="desc">Ein Obsidian-Vault. Markdown, YAML-Frontmatter, Wikilinks. Portabel, versionierbar, eigentum­fähig.</div>
+      <ul>
+        <li>Markdown-Files</li>
+        <li>YAML-Frontmatter</li>
+        <li>Wikilinks</li>
+      </ul>
+    </div>
+
+    <!-- Frontends band -->
+    <div class="frontends">
+      <div class="row-head">
+        <div class="num">04 · FRONTENDS</div>
+        <div class="label">Eingang &amp; Ausgang.</div>
+        <div class="sub">↑↓  BIDIREKTIONAL</div>
+      </div>
+      <div class="chips">
+        <div class="chip">Telegram · Mobile-Capture</div>
+        <div class="chip">Claude Code · Power-User</div>
+        <div class="chip">Web Dashboard</div>
+        <div class="chip">Obsidian App</div>
+        <div class="chip">Cursor / Continue.dev</div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="foot">
+      <div>FIG. 01 · KONZENTRISCHE SCHICHTEN</div>
+      <div>PERSONAL OS · 2026</div>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>
