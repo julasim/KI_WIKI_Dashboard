@@ -418,6 +418,64 @@ export async function readProjects(): Promise<Project[]> {
   return out;
 }
 
+// ─── Project Notes & Meetings ───────────────────────────────
+
+export type ProjectNote = {
+  id: string;
+  title: string;
+  date?: string;
+  body: string;
+  tags: string[];
+};
+
+export type ProjectMeeting = {
+  id: string;
+  title: string;
+  date?: string;
+  attendees: string[];
+  body: string;
+};
+
+async function readProjectFolderItems(
+  projectSlug: string,
+  subfolder: "notes" | "meetings",
+): Promise<{ id: string; title: string; date?: string; body: string; tags: string[]; attendees: string[] }[]> {
+  const dir = join(VAULT_PATH, "05_Projects", projectSlug, subfolder);
+  const files = await safeReadDir(dir);
+  const out = [];
+  for (const f of files) {
+    if (!f.endsWith(".md")) continue;
+    const raw = await safeReadFile(join(dir, f));
+    if (!raw) continue;
+    try {
+      const parsed = matter(raw);
+      const meta = parsed.data;
+      out.push({
+        id: meta.id ?? f.replace(/\.md$/, ""),
+        title: meta.title ?? f.replace(/\.md$/, ""),
+        date: meta.date,
+        body: parsed.content.trim(),
+        tags: Array.isArray(meta.tags) ? meta.tags : [],
+        attendees: Array.isArray(meta.attendees) ? meta.attendees : [],
+      });
+    } catch {
+      // skip
+    }
+  }
+  // Newest first (date or filename-prefix YYYY-MM-DD)
+  return out.sort((a, b) => (b.date ?? b.id).localeCompare(a.date ?? a.id));
+}
+
+export async function readProjectNotes(projectSlug: string): Promise<ProjectNote[]> {
+  const items = await readProjectFolderItems(projectSlug, "notes");
+  return items.map((i) => ({ id: i.id, title: i.title, date: i.date, body: i.body, tags: i.tags }));
+}
+
+export async function readProjectMeetings(projectSlug: string): Promise<ProjectMeeting[]> {
+  const items = await readProjectFolderItems(projectSlug, "meetings");
+  return items.map((i) => ({ id: i.id, title: i.title, date: i.date, attendees: i.attendees, body: i.body }));
+}
+
 // ─── Reminders ──────────────────────────────────────────────
 
 export async function readReminders(): Promise<Reminder[]> {
