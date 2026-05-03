@@ -1,7 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // Standalone-Output für minimalen Docker-Container (~150MB statt ~1GB)
+  // → docker COPY .next/standalone + .next/static + public reicht.
+  output: "standalone",
 };
 
 export default nextConfig;

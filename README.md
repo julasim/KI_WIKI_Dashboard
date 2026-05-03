@@ -64,27 +64,43 @@ Vom Claude-Design-Handoff übernommen — Tokens (Light + Dark), Atome (`.card`,
 
 Original-Handoff liegt unter `../design_handoff/` (Read-Only Reference).
 
-## Deploy auf VPS (TODO)
+## Deploy auf VPS
 
-Geplant: Docker-Container neben dem Bot, mountet Vault read-only.
+### Erst-Installation
 
-```yaml
-# docker-compose.yml (geplant)
-services:
-  dashboard:
-    build: ./app
-    ports:
-      - "3001:3000"
-    volumes:
-      - /opt/vault/KI_WIKI_Vault:/vault:ro
-    environment:
-      - VAULT_PATH=/vault
-    restart: unless-stopped
+```bash
+cd /opt
+git clone https://github.com/julasim/KI_WIKI_Dashboard.git dashboard
+cd dashboard
+bash install.sh
 ```
+
+→ Dashboard läuft auf `http://<vps-ip>:3001`.
+
+### Updates
+
+```bash
+cd /opt/dashboard
+bash update.sh
+```
+
+`update.sh` verifiziert dass das **richtige Repo** gepullt wird (`julasim/KI_WIKI_Dashboard`, nicht das Bot-Repo), pullt nur wenn neue Commits da sind, baut den Container neu und startet ihn.
+
+### Architektur auf VPS
+
+```
+/opt/
+├── bot/            ← KI_WIKI_OS Repo (Bot-Container :8080)
+├── dashboard/      ← KI_WIKI_Dashboard Repo (Dashboard-Container :3001)
+└── vault/
+    └── KI_WIKI_Vault/   ← read-write für Bot, read-only für Dashboard
+```
+
+Beide Container mounten den gleichen Vault — Bot schreibt, Dashboard liest.
 
 ## Status (2026-05-03)
 
 ✅ Setup + Tokens + Reader + 8 Pages
+✅ Docker-Setup (Dockerfile + docker-compose.yml + install.sh + update.sh)
 ⏳ Auth (vorerst keine — local/VPS-IP only)
-⏳ Docker-Setup für VPS-Deploy
-⏳ Erweiterte Features (Calendar-Integration via MS Graph, Read-Cache mit SQLite bei Performance)
+⏳ Erweiterte Features (Calendar via MS Graph, Read-Cache bei Performance-Bedarf)

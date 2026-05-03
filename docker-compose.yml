@@ -1,0 +1,20 @@
+services:
+  dashboard:
+    build: .
+    container_name: ki-wiki-dashboard
+    restart: unless-stopped
+    ports:
+      # Host-Port:Container-Port. 3001 default damit Bot-Port (8080?) frei bleibt.
+      - "3001:3000"
+    volumes:
+      # Vault read-only — Dashboard schreibt nichts.
+      - /opt/vault/KI_WIKI_Vault:/vault:ro
+    environment:
+      - VAULT_PATH=/vault
+      - NODE_ENV=production
+      - NEXT_TELEMETRY_DISABLED=1
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
