@@ -1,6 +1,6 @@
 import { readWins } from "@/lib/vault";
 
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 export default async function WinsPage() {
   const wins = await readWins();

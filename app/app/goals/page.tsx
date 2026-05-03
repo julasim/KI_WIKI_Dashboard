@@ -1,7 +1,7 @@
 import { readVision, readSaeulen, readDrift } from "@/lib/vault";
 import { daysUntilStichtag } from "@/lib/utils";
 
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 export default async function GoalsPage() {
   const [vision, saeulen, drift] = await Promise.all([

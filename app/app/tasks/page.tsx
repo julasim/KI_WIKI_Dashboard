@@ -1,7 +1,7 @@
 import { readTasks } from "@/lib/vault";
 import { PRIO_DOT, PRIO_LABEL } from "@/lib/utils";
 
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 export default async function TasksPage() {
   const tasks = await readTasks();

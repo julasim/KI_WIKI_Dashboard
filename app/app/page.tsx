@@ -10,8 +10,10 @@ import {
 } from "@/lib/vault";
 import { daysUntilStichtag, formatDateLongDe, weekdayDe } from "@/lib/utils";
 
-// ISR: alle 60s neu generieren — Vault-Änderungen erscheinen schnell
-export const revalidate = 60;
+// Bei jedem Request frisch rendern — sonst werden im Docker-standalone-Build
+// die Pages zur Build-Time mit leerem Vault prerendert (Volume mountet erst zur
+// Runtime). force-dynamic umgeht das.
+export const dynamic = "force-dynamic";
 
 export default async function TodayPage() {
   const today = new Date();

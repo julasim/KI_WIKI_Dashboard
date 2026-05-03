@@ -1,6 +1,6 @@
 import { readHabits, HABIT_KEYS } from "@/lib/vault";
 
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 export default async function HabitsPage() {
   const days = await readHabits(30);

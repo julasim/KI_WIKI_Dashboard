@@ -1,7 +1,7 @@
 import { readSportSessions, aggregateSportWeeks } from "@/lib/vault";
 import { SportChart } from "./chart";
 
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 export default async function SportPage() {
   const sessions = await readSportSessions();
