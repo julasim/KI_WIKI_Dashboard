@@ -97,7 +97,10 @@ export type DriftStatus = {
 
 const safeReadFile = async (path: string): Promise<string | null> => {
   try {
-    return await readFile(path, "utf8");
+    const raw = await readFile(path, "utf8");
+    // Normalisiere CRLF → LF. Vault liegt auf Windows-Mount (Z:) und hat
+    // \r\n — Regex-$ matcht sonst nicht weil \r vor \n.
+    return raw.replace(/\r\n/g, "\n");
   } catch {
     return null;
   }
