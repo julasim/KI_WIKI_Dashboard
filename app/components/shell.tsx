@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn, daysUntilStichtag } from "@/lib/utils";
 import {
-  Home, ListTodo, FolderKanban, Activity, Dumbbell, Trophy, BookOpen, Target, Moon, Sun,
+  Home, ListTodo, FolderKanban, Activity, Dumbbell, Trophy, BookOpen, Target, FolderTree, Moon, Sun,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -17,6 +17,7 @@ const NAV = [
   { href: "/wins", label: "Wins", icon: Trophy },
   { href: "/reading", label: "Reading", icon: BookOpen },
   { href: "/goals", label: "Goals", icon: Target },
+  { href: "/vault", label: "Vault", icon: FolderTree },
 ];
 
 function ThemeToggle() {

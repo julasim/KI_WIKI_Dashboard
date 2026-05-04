@@ -573,6 +573,160 @@ export async function readProjectMeetings(projectSlug: string): Promise<ProjectM
   );
 }
 
+// ─── Generic Vault-Browser ──────────────────────────────────
+
+const VAULT_BROWSE_SKIP = new Set([
+  ".obsidian", ".trash", ".git", "node_modules",
+  "99_Archive", "06_Meta", // Audit-Trails / Bot-Internal — opt-in via direkten URL
+]);
+
+export type VaultEntry =
+  | { kind: "dir"; name: string; path: string; childCount: number }
+  | { kind: "file"; name: string; path: string; size: number; ext: string; mtime: string };
+
+export type VaultListing = {
+  path: string;             // current path
+  parents: { name: string; path: string }[]; // breadcrumb
+  entries: VaultEntry[];    // sub-dirs + files
+};
+
+export type VaultFileContent = {
+  path: string;
+  parents: { name: string; path: string }[];
+  name: string;
+  ext: string;
+  size: number;
+  raw: string;
+  bodyHtml?: string;        // wenn .md
+  frontmatter?: Record<string, unknown>;
+  isBinary: boolean;
+};
+
+function safeRelPath(path: string): string {
+  // Normalisiere: ohne führenden /, ohne ../
+  return path
+    .replace(/^\/+/, "")
+    .split("/")
+    .filter((s) => s && s !== "." && s !== "..")
+    .join("/");
+}
+
+function buildBreadcrumbs(path: string): { name: string; path: string }[] {
+  const parts = path.split("/").filter(Boolean);
+  const out: { name: string; path: string }[] = [{ name: "Vault", path: "" }];
+  let acc = "";
+  for (const p of parts) {
+    acc = acc ? `${acc}/${p}` : p;
+    out.push({ name: p, path: acc });
+  }
+  return out;
+}
+
+/**
+ * Listet einen Folder auf — Sub-Dirs + Files.
+ * Skipt Noise-Folders (06_Meta, 99_Archive, etc.) im TOP-LEVEL aber nicht
+ * tiefer (so kann man explizit über URL reinklicken wenn man will).
+ */
+export async function browseVault(path: string): Promise<VaultListing> {
+  const rel = safeRelPath(path);
+  const dir = rel ? join(VAULT_PATH, rel) : VAULT_PATH;
+  const files = await safeReadDir(dir);
+  const entries: VaultEntry[] = [];
+  for (const f of files) {
+    if (f.startsWith(".") && f !== ".obsidian") continue; // hidden skip außer ggf. später opt-in
+    if (!rel && VAULT_BROWSE_SKIP.has(f)) continue; // Top-Level-Noise filter
+    const full = join(dir, f);
+    let st;
+    try { st = await stat(full); } catch { continue; }
+    const childPath = rel ? `${rel}/${f}` : f;
+    if (st.isDirectory()) {
+      // Child-Count für Anzeige
+      let childCount = 0;
+      try {
+        const sub = await safeReadDir(full);
+        childCount = sub.filter((s) => !s.startsWith(".")).length;
+      } catch {}
+      entries.push({ kind: "dir", name: f, path: childPath, childCount });
+    } else if (st.isFile()) {
+      const ext = f.includes(".") ? f.slice(f.lastIndexOf(".") + 1).toLowerCase() : "";
+      entries.push({
+        kind: "file",
+        name: f,
+        path: childPath,
+        size: st.size,
+        ext,
+        mtime: st.mtime.toISOString().slice(0, 10),
+      });
+    }
+  }
+  // Sort: dirs first, then files alphabetisch
+  entries.sort((a, b) => {
+    if (a.kind !== b.kind) return a.kind === "dir" ? -1 : 1;
+    return a.name.localeCompare(b.name, "de", { numeric: true });
+  });
+  return {
+    path: rel,
+    parents: buildBreadcrumbs(rel),
+    entries,
+  };
+}
+
+/**
+ * Liest ein einzelnes File mit Frontmatter + Markdown-Render (wenn .md).
+ */
+export async function readVaultFile(path: string): Promise<VaultFileContent | null> {
+  const rel = safeRelPath(path);
+  if (!rel) return null;
+  const full = join(VAULT_PATH, rel);
+  let st;
+  try { st = await stat(full); } catch { return null; }
+  if (!st.isFile()) return null;
+  const name = rel.split("/").pop() ?? rel;
+  const ext = name.includes(".") ? name.slice(name.lastIndexOf(".") + 1).toLowerCase() : "";
+  const isText = ["md", "txt", "json", "yaml", "yml", "csv", "tsv", "log"].includes(ext);
+  const isBinary = !isText;
+  if (isBinary) {
+    return {
+      path: rel,
+      parents: buildBreadcrumbs(rel),
+      name,
+      ext,
+      size: st.size,
+      raw: "",
+      isBinary: true,
+    };
+  }
+  const raw = await safeReadFile(full);
+  if (raw === null) return null;
+  let bodyHtml: string | undefined;
+  let frontmatter: Record<string, unknown> | undefined;
+  let content = raw;
+  if (ext === "md") {
+    try {
+      const parsed = matter(raw);
+      frontmatter = parsed.data;
+      content = parsed.content;
+      const { mdToHtml } = await import("./markdown");
+      bodyHtml = await mdToHtml(content);
+    } catch {
+      // bei FM-Parse-Fail einfach raw als HTML
+      const { mdToHtml } = await import("./markdown");
+      bodyHtml = await mdToHtml(raw);
+    }
+  }
+  return {
+    path: rel,
+    parents: buildBreadcrumbs(rel),
+    name,
+    ext,
+    size: st.size,
+    raw: content,
+    bodyHtml,
+    frontmatter,
+    isBinary: false,
+  };
+}
+
 // ─── Reminders ──────────────────────────────────────────────
 
 export async function readReminders(): Promise<Reminder[]> {
