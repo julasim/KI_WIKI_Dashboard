@@ -4,8 +4,9 @@ services:
     container_name: ki-wiki-dashboard
     restart: unless-stopped
     ports:
-      # Host-Port:Container-Port. 3001 default damit Bot-Port (8080?) frei bleibt.
-      - "3001:3000"
+      # Projekt-Konvention: alle Ports in 5xxx-Range.
+      # Container-intern auf 5000 (PORT env), Host exposed 5001.
+      - "5001:5000"
     volumes:
       # Vault read-only — Dashboard schreibt nichts.
       - /opt/vault/KI_WIKI_Vault:/vault:ro
@@ -13,6 +14,8 @@ services:
       - VAULT_PATH=/vault
       - NODE_ENV=production
       - NEXT_TELEMETRY_DISABLED=1
+      - PORT=5000
+      - HOSTNAME=0.0.0.0
     logging:
       driver: "json-file"
       options:

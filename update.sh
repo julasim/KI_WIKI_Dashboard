@@ -47,4 +47,4 @@ echo
 echo "──── Status ────"
 docker compose ps
 echo
-echo "✓ Dashboard läuft auf http://$(hostname -I | awk '{print $1}'):3001"
+echo "✓ Dashboard läuft auf http://$(hostname -I | awk '{print $1}'):5001"

@@ -21,7 +21,8 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
-ENV PORT=3000
+# Projekt-Konvention: alle Container-Ports in 5xxx-Range
+ENV PORT=5000
 ENV HOSTNAME=0.0.0.0
 
 # Standalone-Output enthält Server + minimal node_modules
@@ -32,6 +33,6 @@ COPY --from=builder /build/public ./public
 # Läuft als root — Vault wird read-only gemountet (siehe docker-compose.yml),
 # daher kein Write-Risiko. Non-root-User würde Permission-Probleme bringen
 # da der Vault auf dem VPS root-owned ist.
-EXPOSE 3000
+EXPOSE 5000
 
 CMD ["node", "server.js"]

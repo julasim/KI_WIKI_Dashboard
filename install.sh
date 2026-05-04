@@ -51,7 +51,7 @@ docker compose ps
 IP=$(hostname -I | awk '{print $1}')
 echo
 echo "✓ Dashboard läuft."
-echo "  Lokal:    http://localhost:3001"
-echo "  Network:  http://$IP:3001"
+echo "  Lokal:    http://localhost:5001"
+echo "  Network:  http://$IP:5001"
 echo
 echo "Update später mit: cd /opt/dashboard && bash update.sh"

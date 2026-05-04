@@ -17,7 +17,7 @@ Zeigt Habits, Sport, Tasks, Projekte, Wins, Bücher, Goals visuell.
 ```bash
 cd app
 npm install         # Dependencies
-npm run dev         # Dev-Server auf http://localhost:3000 (oder PORT=3001)
+npm run dev         # Dev-Server auf http://localhost:3000 (oder PORT=5000 für Konvention)
 ```
 
 `.env.local`:
@@ -75,7 +75,7 @@ cd dashboard
 bash install.sh
 ```
 
-→ Dashboard läuft auf `http://<vps-ip>:3001`.
+→ Dashboard läuft auf `http://<vps-ip>:5001`.
 
 ### Updates
 
@@ -91,7 +91,7 @@ bash update.sh
 ```
 /opt/
 ├── bot/            ← KI_WIKI_OS Repo (Bot-Container :8080)
-├── dashboard/      ← KI_WIKI_Dashboard Repo (Dashboard-Container :3001)
+├── dashboard/      ← KI_WIKI_Dashboard Repo (Dashboard-Container :5001)
 └── vault/
     └── KI_WIKI_Vault/   ← read-write für Bot, read-only für Dashboard
 ```
