@@ -98,9 +98,16 @@ export function ProjectDetailTabs({
               <details key={n.id} className="card p-4 group">
                 <summary className="cursor-pointer flex items-center gap-2 list-none">
                   <span className="text-[var(--ink-soft)] text-xs group-open:rotate-90 transition-transform">▶</span>
-                  <span className="serif text-base flex-1">{n.title}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="serif text-base truncate">{n.title}</div>
+                    {n.subpath && n.subpath !== "notes" && (
+                      <div className="text-[10px] num-mono text-[var(--ink-soft)] mt-0.5">
+                        {n.subpath}/
+                      </div>
+                    )}
+                  </div>
                   {n.date && (
-                    <span className="num-mono text-[11px] text-[var(--ink-mute)]">{n.date}</span>
+                    <span className="num-mono text-[11px] text-[var(--ink-mute)] shrink-0">{n.date}</span>
                   )}
                 </summary>
                 {n.tags.length > 0 && (

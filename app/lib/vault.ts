@@ -427,6 +427,7 @@ export type ProjectNote = {
   body: string;       // raw markdown (for fallback / debugging)
   bodyHtml: string;   // pre-rendered HTML
   tags: string[];
+  subpath?: string;   // 'notes' | 'bbm-skript-...' / leer für Top-Level
 };
 
 export type ProjectMeeting = {
@@ -438,39 +439,111 @@ export type ProjectMeeting = {
   bodyHtml: string;
 };
 
+type RawProjectItem = {
+  id: string;
+  title: string;
+  date?: string;
+  body: string;
+  tags: string[];
+  attendees: string[];
+  subpath?: string; // relativer Pfad innerhalb des Projekts (für Subprojekt-Hinweis)
+};
+
+/**
+ * Liest Files in einem Projekt-Subfolder (notes/ oder meetings/).
+ * Alte Funktion — nur für Subfolder-spezifischen Zugriff.
+ */
 async function readProjectFolderItems(
   projectSlug: string,
   subfolder: "notes" | "meetings",
-): Promise<{ id: string; title: string; date?: string; body: string; tags: string[]; attendees: string[] }[]> {
+): Promise<RawProjectItem[]> {
   const dir = join(VAULT_PATH, "05_Projects", projectSlug, subfolder);
   const files = await safeReadDir(dir);
-  const out = [];
+  const out: RawProjectItem[] = [];
   for (const f of files) {
     if (!f.endsWith(".md")) continue;
     const raw = await safeReadFile(join(dir, f));
     if (!raw) continue;
-    try {
-      const parsed = matter(raw);
-      const meta = parsed.data;
-      out.push({
-        id: meta.id ?? f.replace(/\.md$/, ""),
-        title: meta.title ?? f.replace(/\.md$/, ""),
-        date: meta.date,
-        body: parsed.content.trim(),
-        tags: Array.isArray(meta.tags) ? meta.tags : [],
-        attendees: Array.isArray(meta.attendees) ? meta.attendees : [],
-      });
-    } catch {
-      // skip
+    const item = parseProjectFile(raw, f);
+    if (item) out.push(item);
+  }
+  return out.sort((a, b) => (b.date ?? b.id).localeCompare(a.date ?? a.id));
+}
+
+function parseProjectFile(raw: string, filename: string, subpath?: string): RawProjectItem | null {
+  try {
+    const parsed = matter(raw);
+    const meta = parsed.data;
+    return {
+      id: meta.id ?? filename.replace(/\.md$/, ""),
+      title: meta.title ?? filename.replace(/\.md$/, ""),
+      date: meta.date,
+      body: parsed.content.trim(),
+      tags: Array.isArray(meta.tags) ? meta.tags : [],
+      attendees: Array.isArray(meta.attendees) ? meta.attendees : [],
+      subpath,
+    };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Rekursiver Walk über Projekt-Folder — sammelt ALLE .md ausser:
+ *   - README.md, CONTEXT.md (System-Files)
+ *   - Files in <slug>/meetings/* (kommen separat in readProjectMeetings)
+ *
+ * Inkludiert:
+ *   - <slug>/notes/* (Standard-Notes)
+ *   - <slug>/*.md (Top-Level-Files wie Panama-Budget.md, BBM-Index, etc.)
+ *   - <slug>/<subproject>/**\/*.md (BBM-Skripte unter matura/)
+ *
+ * Subpath wird gesetzt damit UI Subprojekt-Hinweis zeigen kann.
+ */
+async function walkProjectNotes(projectSlug: string): Promise<RawProjectItem[]> {
+  const root = join(VAULT_PATH, "05_Projects", projectSlug);
+  const out: RawProjectItem[] = [];
+
+  async function walk(dir: string, relPath: string) {
+    const entries = await safeReadDir(dir);
+    for (const e of entries) {
+      const full = join(dir, e);
+      const rel = relPath ? `${relPath}/${e}` : e;
+      let isDir = false;
+      try {
+        const s = await stat(full);
+        isDir = s.isDirectory();
+      } catch { continue; }
+
+      if (isDir) {
+        // meetings/ skippen — kommt über readProjectMeetings
+        if (rel === "meetings" || rel.endsWith("/meetings")) continue;
+        // Rekursiv weiter
+        await walk(full, rel);
+        continue;
+      }
+
+      if (!e.endsWith(".md")) continue;
+      // System-Files skip
+      if (e === "README.md" || e === "CONTEXT.md") continue;
+
+      const raw = await safeReadFile(full);
+      if (!raw) continue;
+      // Subpath = Folder-Hierarchie ohne Filename (für UI-Anzeige)
+      const subpath = relPath || undefined;
+      const item = parseProjectFile(raw, e, subpath);
+      if (item) out.push(item);
     }
   }
-  // Newest first (date or filename-prefix YYYY-MM-DD)
+  await walk(root, "");
   return out.sort((a, b) => (b.date ?? b.id).localeCompare(a.date ?? a.id));
 }
 
 export async function readProjectNotes(projectSlug: string): Promise<ProjectNote[]> {
-  const items = await readProjectFolderItems(projectSlug, "notes");
-  // Markdown → HTML auf Server (gleiche Page-Render)
+  // Walk REKURSIV — sammelt notes/, top-level-files, subprojects.
+  // Vorher nur <slug>/notes/ — Bug: 23+ Files in matura/, urlaub-panama/,
+  // kiosk-sanierung/ wurden nicht angezeigt.
+  const items = await walkProjectNotes(projectSlug);
   const { mdToHtml } = await import("./markdown");
   return Promise.all(
     items.map(async (i) => ({
@@ -480,6 +553,7 @@ export async function readProjectNotes(projectSlug: string): Promise<ProjectNote
       body: i.body,
       bodyHtml: await mdToHtml(i.body),
       tags: i.tags,
+      subpath: i.subpath,
     })),
   );
 }
