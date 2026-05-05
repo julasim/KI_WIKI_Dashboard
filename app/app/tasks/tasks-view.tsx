@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import type { Task } from "@/lib/vault";
 import { cn, PRIO_DOT, PRIO_LABEL } from "@/lib/utils";
+import { TaskToggle } from "@/components/task-toggle";
 
 const PRIO_ORDER: Record<string, number> = { urgent: 0, high: 1, medium: 2, low: 3 };
 
@@ -182,6 +183,7 @@ export function TasksView({ tasks }: { tasks: Task[] }) {
               <div className="card divide-y hairline overflow-hidden">
                 {grp.items.map((t) => (
                   <div key={t.id} className="px-4 py-3 flex items-center gap-3 text-sm">
+                    <TaskToggle taskId={t.id} status={t.status} />
                     <span
                       className={cn("shrink-0", PRIO_DOT[t.priority] ?? "")}
                       style={{ width: 8, height: 8, borderRadius: 999 }}

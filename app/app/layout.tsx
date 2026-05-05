@@ -4,6 +4,7 @@ import "./globals.css";
 import { Shell } from "@/components/shell";
 import { AutoRefresh } from "@/components/auto-refresh";
 import { SessionProvider } from "@/components/session-provider";
+import { QuickActionsGate } from "@/components/quick-actions-gate";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,6 +35,7 @@ export default function RootLayout({
         <SessionProvider>
           <AutoRefresh />
           <Shell>{children}</Shell>
+          <QuickActionsGate />
         </SessionProvider>
       </body>
     </html>
