@@ -182,8 +182,8 @@ export function TasksView({ tasks }: { tasks: Task[] }) {
               </div>
               <div className="card divide-y hairline overflow-hidden">
                 {grp.items.map((t) => (
-                  <div key={t.id} className="px-4 py-3 flex items-center gap-3 text-sm">
-                    <TaskToggle taskId={t.id} status={t.status} />
+                  <div key={t.id} className="px-3 md:px-4 py-3.5 md:py-3 flex items-center gap-2.5 md:gap-3 text-sm">
+                    <TaskToggle taskId={t.id} status={t.status} size={16} />
                     <span
                       className={cn("shrink-0", PRIO_DOT[t.priority] ?? "")}
                       style={{ width: 8, height: 8, borderRadius: 999 }}

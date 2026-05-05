@@ -76,9 +76,9 @@ export function QuickActions({ projects = [] }: { projects?: string[] }) {
 
   return (
     <>
-      {/* FAB */}
+      {/* FAB — Position oberhalb Bottom-Nav (mobile) bzw. unten rechts (desktop) */}
       {!mode && (
-        <div className="fixed bottom-20 md:bottom-6 right-4 z-40">
+        <div className="fixed bottom-[88px] md:bottom-6 right-4 z-40">
           {open && (
             <div className="flex flex-col gap-2 mb-3 items-end">
               <ActionButton
@@ -110,12 +110,12 @@ export function QuickActions({ projects = [] }: { projects?: string[] }) {
           <button
             onClick={() => setOpen(!open)}
             className={cn(
-              "h-12 w-12 rounded-full bg-[var(--ink)] text-[var(--bg)] shadow-lg flex items-center justify-center transition-transform",
+              "h-14 w-14 md:h-12 md:w-12 rounded-full bg-[var(--ink)] text-[var(--bg)] shadow-xl flex items-center justify-center transition-transform active:scale-95",
               open && "rotate-45",
             )}
             aria-label={open ? "Menü schließen" : "Quick-Add"}
           >
-            <Plus size={20} />
+            <Plus size={22} />
           </button>
         </div>
       )}
@@ -182,23 +182,23 @@ function Modal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
+      className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-black/40 md:px-4"
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
       <div
         ref={ref}
-        className="w-full max-w-md card p-5 max-h-[90vh] overflow-y-auto"
+        className="w-full md:max-w-md card p-5 max-h-[92vh] md:max-h-[90vh] overflow-y-auto rounded-b-none md:rounded-lg"
       >
         <div className="flex items-center justify-between mb-4">
           <h2 className="display text-lg">{title}</h2>
           <button
             onClick={onClose}
-            className="btn-ghost btn"
+            className="btn-ghost btn h-9 w-9 flex items-center justify-center"
             aria-label="Schließen"
           >
-            <X size={16} />
+            <X size={18} />
           </button>
         </div>
         {children}

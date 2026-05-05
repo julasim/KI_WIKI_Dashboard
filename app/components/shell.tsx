@@ -107,12 +107,15 @@ export function Shell({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 px-4 py-5 md:px-8 md:py-8 max-w-[1100px] w-full mx-auto pb-24 md:pb-8">
+      <main className="flex-1 px-4 py-5 md:px-8 md:py-8 max-w-[1100px] w-full mx-auto pb-28 md:pb-8">
         {children}
       </main>
 
-      {/* Mobile Bottom-Nav */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 border-t hairline bg-[var(--bg)] overflow-x-auto no-scrollbar">
+      {/* Mobile Bottom-Nav — größere Touch-Targets, safe-area-inset für iPhone-Notch */}
+      <nav
+        className="md:hidden fixed bottom-0 left-0 right-0 border-t hairline bg-[var(--bg)]/95 backdrop-blur overflow-x-auto no-scrollbar"
+        style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
+      >
         <div className="flex">
           {NAV.map((item) => {
             const Icon = item.icon;
@@ -122,11 +125,11 @@ export function Shell({ children }: { children: React.ReactNode }) {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex flex-col items-center justify-center gap-1 min-w-[72px] py-2 text-[10px]",
+                  "flex flex-col items-center justify-center gap-1 min-w-[72px] py-2.5 text-[10px] active:bg-[var(--bg-2)]",
                   active ? "text-[var(--ink)]" : "text-[var(--ink-mute)]",
                 )}
               >
-                <Icon size={18} />
+                <Icon size={20} />
                 <span>{item.label}</span>
               </Link>
             );

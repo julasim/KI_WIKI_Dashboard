@@ -66,10 +66,10 @@ export function GoalLogButton({
 
       {open && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
+          className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-black/40 md:px-4"
           onMouseDown={(e) => e.target === e.currentTarget && setOpen(false)}
         >
-          <div className="w-full max-w-md card p-5">
+          <div className="w-full md:max-w-md card p-5 rounded-b-none md:rounded-lg">
             <div className="flex items-center justify-between mb-3">
               <h3 className="display text-base">{label}</h3>
               <button
