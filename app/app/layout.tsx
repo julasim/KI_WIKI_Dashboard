@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Shell } from "@/components/shell";
 import { AutoRefresh } from "@/components/auto-refresh";
+import { SessionProvider } from "@/components/session-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,8 +31,10 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full">
-        <AutoRefresh />
-        <Shell>{children}</Shell>
+        <SessionProvider>
+          <AutoRefresh />
+          <Shell>{children}</Shell>
+        </SessionProvider>
       </body>
     </html>
   );

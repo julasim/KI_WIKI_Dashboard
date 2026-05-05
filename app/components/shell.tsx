@@ -4,9 +4,10 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn, daysUntilStichtag } from "@/lib/utils";
 import {
-  Home, ListTodo, FolderKanban, Activity, Dumbbell, Trophy, BookOpen, Target, FolderTree, Moon, Sun,
+  Home, ListTodo, FolderKanban, Activity, Dumbbell, Trophy, BookOpen, Target, FolderTree, Moon, Sun, LogOut,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { signOut } from "next-auth/react";
 
 const NAV = [
   { href: "/", label: "Heute", icon: Home },
@@ -45,19 +46,44 @@ export function Shell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const daysLeft = daysUntilStichtag();
 
+  // Auf der Login-Page kein Shell rendern
+  if (pathname === "/login") {
+    return <>{children}</>;
+  }
+
   return (
     <div className="min-h-screen flex flex-col md:flex-row">
       {/* Mobile Top-Bar */}
       <header className="md:hidden flex items-center justify-between px-4 h-14 border-b hairline">
         <div className="display text-lg">Personal OS</div>
-        <ThemeToggle />
+        <div className="flex items-center gap-1">
+          <ThemeToggle />
+          <button
+            onClick={() => signOut({ callbackUrl: "/login" })}
+            className="btn-ghost btn"
+            aria-label="Logout"
+            title="Abmelden"
+          >
+            <LogOut size={16} />
+          </button>
+        </div>
       </header>
 
       {/* Desktop Sidebar */}
       <aside className="hidden md:flex md:flex-col md:w-56 md:shrink-0 md:border-r hairline md:p-4 md:gap-1">
         <div className="display text-base mb-4 px-2 flex items-center justify-between">
           <span>Personal OS</span>
-          <ThemeToggle />
+          <div className="flex items-center gap-0.5">
+            <ThemeToggle />
+            <button
+              onClick={() => signOut({ callbackUrl: "/login" })}
+              className="btn-ghost btn"
+              aria-label="Logout"
+              title="Abmelden"
+            >
+              <LogOut size={16} />
+            </button>
+          </div>
         </div>
         <nav className="flex flex-col gap-0.5">
           {NAV.map((item) => {
