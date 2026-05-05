@@ -1,21 +1,17 @@
 "use client";
 
-import type { HabitDay, HabitKey } from "@/lib/vault";
+import { HABIT_KEYS, type HabitDay, type HabitKey } from "@/lib/vault";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
 /**
  * Year-Heatmap (GitHub-Style): 365 Tage rückwärts, 7 Zeilen × 53 Spalten.
  * Color-Coded nach Anzahl ok-Habits pro Tag (0-N).
+ *
+ * Habit-Definitionen werden direkt aus lib/vault HABIT_KEYS importiert
+ * (Single Source of Truth — kein Drift möglich).
  */
-const HABIT_DEFS: { key: HabitKey; label: string }[] = [
-  { key: "morgenroutine", label: "Morgenroutine" },
-  { key: "lesen", label: "Lesen" },
-  { key: "sport", label: "Sport" },
-  { key: "anker", label: "Anker" },
-  { key: "tagebuch", label: "Tagebuch" },
-  { key: "abendroutine", label: "Abendroutine" },
-];
+const HABIT_DEFS: readonly { key: HabitKey; label: string }[] = HABIT_KEYS;
 
 export function HabitsYearHeatmap({ habits }: { habits: HabitDay[] }) {
   const [selectedHabit, setSelectedHabit] = useState<HabitKey | "all">("all");
