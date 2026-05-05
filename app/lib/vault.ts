@@ -380,6 +380,23 @@ export async function readTasks(): Promise<Task[]> {
 
 // ─── Projects ───────────────────────────────────────────────
 
+/**
+ * Lightweight: nur die Slugs aller Projekte (Folders mit README.md unter
+ * 05_Projects/, plus optional Subprojekte).
+ * Für Dropdown-Menüs in Quick-Add-Forms.
+ */
+export async function listProjectSlugs(): Promise<string[]> {
+  const projectsDir = join(VAULT_PATH, "05_Projects");
+  const slugs = await safeReadDir(projectsDir);
+  const out: string[] = [];
+  for (const slug of slugs) {
+    const readmePath = join(projectsDir, slug, "README.md");
+    const raw = await safeReadFile(readmePath);
+    if (raw) out.push(slug);
+  }
+  return out.sort();
+}
+
 export async function readProjects(): Promise<Project[]> {
   const projectsDir = join(VAULT_PATH, "05_Projects");
   const slugs = await safeReadDir(projectsDir);

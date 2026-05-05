@@ -5,6 +5,7 @@ import { Shell } from "@/components/shell";
 import { AutoRefresh } from "@/components/auto-refresh";
 import { SessionProvider } from "@/components/session-provider";
 import { QuickActionsGate } from "@/components/quick-actions-gate";
+import { listProjectSlugs } from "@/lib/vault";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -21,11 +22,14 @@ export const metadata: Metadata = {
   description: "Persönliches Tracking & Knowledge-Dashboard",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Projekte für Quick-Add-Dropdowns laden (Server-Side)
+  const projects = await listProjectSlugs().catch(() => []);
+
   return (
     <html
       lang="de"
@@ -35,7 +39,7 @@ export default function RootLayout({
         <SessionProvider>
           <AutoRefresh />
           <Shell>{children}</Shell>
-          <QuickActionsGate />
+          <QuickActionsGate projects={projects} />
         </SessionProvider>
       </body>
     </html>

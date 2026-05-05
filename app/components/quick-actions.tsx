@@ -16,8 +16,10 @@ type Mode = null | "task" | "note" | "daily" | "win";
 /**
  * Floating-Action-Button unten rechts. Klick öffnet Menü mit 4 Quick-Adds.
  * Jede Aktion öffnet ein Modal-Dialog mit fokussiertem Form.
+ *
+ * @param projects Slugs aller Projekte (für Dropdown-Auswahl in Task/Note)
  */
-export function QuickActions() {
+export function QuickActions({ projects = [] }: { projects?: string[] }) {
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<Mode>(null);
 
@@ -71,8 +73,8 @@ export function QuickActions() {
       {/* Modal */}
       {mode && (
         <Modal title={modeTitle(mode)} onClose={close}>
-          {mode === "task" && <TaskForm onDone={close} />}
-          {mode === "note" && <NoteForm onDone={close} />}
+          {mode === "task" && <TaskForm projects={projects} onDone={close} />}
+          {mode === "note" && <NoteForm projects={projects} onDone={close} />}
           {mode === "daily" && <DailyForm onDone={close} />}
           {mode === "win" && <WinForm onDone={close} />}
         </Modal>
@@ -174,7 +176,13 @@ const textareaCls =
   "w-full px-3 py-2 rounded-md border hairline bg-[var(--bg)] text-sm focus:outline-none focus:border-[var(--ink-soft)] resize-none";
 const labelCls = "block text-xs eyebrow mb-1.5";
 
-function TaskForm({ onDone }: { onDone: () => void }) {
+function TaskForm({
+  projects,
+  onDone,
+}: {
+  projects: string[];
+  onDone: () => void;
+}) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -218,11 +226,16 @@ function TaskForm({ onDone }: { onDone: () => void }) {
       <div className="grid grid-cols-2 gap-3 mt-3">
         <div>
           <label className={labelCls} htmlFor="task-context">Kontext</label>
-          <input id="task-context" name="context" placeholder="@home" className={inputCls} />
+          <input id="task-context" name="context" placeholder="home" className={inputCls} />
         </div>
         <div>
-          <label className={labelCls} htmlFor="task-project">Projekt-Slug</label>
-          <input id="task-project" name="project" placeholder="dachboden-ausbau" className={inputCls} />
+          <label className={labelCls} htmlFor="task-project">Projekt</label>
+          <select id="task-project" name="project" className={inputCls} defaultValue="">
+            <option value="">— keins —</option>
+            {projects.map((p) => (
+              <option key={p} value={p}>{p}</option>
+            ))}
+          </select>
         </div>
       </div>
       <div className="mt-3">
@@ -241,7 +254,13 @@ function TaskForm({ onDone }: { onDone: () => void }) {
   );
 }
 
-function NoteForm({ onDone }: { onDone: () => void }) {
+function NoteForm({
+  projects,
+  onDone,
+}: {
+  projects: string[];
+  onDone: () => void;
+}) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -273,8 +292,13 @@ function NoteForm({ onDone }: { onDone: () => void }) {
       </div>
       <div className="grid grid-cols-2 gap-3 mt-3">
         <div>
-          <label className={labelCls} htmlFor="note-project">Projekt (optional)</label>
-          <input id="note-project" name="project" placeholder="dachboden-ausbau" className={inputCls} />
+          <label className={labelCls} htmlFor="note-project">Projekt</label>
+          <select id="note-project" name="project" className={inputCls} defaultValue="">
+            <option value="">— generisch (10_Life/notes) —</option>
+            {projects.map((p) => (
+              <option key={p} value={p}>{p}</option>
+            ))}
+          </select>
         </div>
         <div>
           <label className={labelCls} htmlFor="note-tags">Tags (komma-separiert)</label>

@@ -5,9 +5,10 @@ import { QuickActions } from "./quick-actions";
 
 /**
  * Zeigt QuickActions auf allen Pages außer /login.
+ * Projekte werden vom Server-Component (Layout) als Prop reingereicht.
  */
-export function QuickActionsGate() {
+export function QuickActionsGate({ projects }: { projects: string[] }) {
   const pathname = usePathname();
   if (pathname === "/login") return null;
-  return <QuickActions />;
+  return <QuickActions projects={projects} />;
 }
