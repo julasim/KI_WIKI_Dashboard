@@ -5,10 +5,14 @@ import {
   readTasks,
   readReminders,
   readYesterdayDaily,
+  readDailies,
+  readDrift,
   computeStreak,
   HABIT_KEYS,
 } from "@/lib/vault";
 import { daysUntilStichtag, formatDateLongDe, weekdayDe } from "@/lib/utils";
+import { EnergyMoodTrend } from "@/components/charts/energy-mood-trend";
+import { DriftIndicator, type DriftItem } from "@/components/charts/drift-indicator";
 
 // Bei jedem Request frisch rendern — sonst werden im Docker-standalone-Build
 // die Pages zur Build-Time mit leerem Vault prerendert (Volume mountet erst zur
@@ -19,15 +23,34 @@ export default async function TodayPage() {
   const today = new Date();
   const todayISO = today.toISOString().slice(0, 10);
 
-  const [vision, habits, sessions, tasks, reminders, yesterday, streak] = await Promise.all([
-    readVision(),
-    readHabits(2),
-    readSportSessions(),
-    readTasks(),
-    readReminders(),
-    readYesterdayDaily(),
-    computeStreak(),
-  ]);
+  const [vision, habits, sessions, tasks, reminders, yesterday, streak, dailies, drift] =
+    await Promise.all([
+      readVision(),
+      readHabits(2),
+      readSportSessions(),
+      readTasks(),
+      readReminders(),
+      readYesterdayDaily(),
+      computeStreak(),
+      readDailies(30),
+      readDrift().catch(() => null),
+    ]);
+
+  // Drift-Items: Tage seit letztem Anker, je threshold (weekly=7, monthly=30, quarterly=90)
+  const todayDate = new Date(todayISO);
+  const calcDays = (dateStr?: string): number | null => {
+    if (!dateStr || dateStr === "—") return null;
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return null;
+    return Math.round((todayDate.getTime() - d.getTime()) / 86400_000);
+  };
+  const driftItems: DriftItem[] = drift
+    ? [
+        { label: "Wochen-Anker", daysSince: calcDays(drift.weekly), threshold: 7 },
+        { label: "Monats-Anker", daysSince: calcDays(drift.monthly), threshold: 35 },
+        { label: "Quartals-Anker", daysSince: calcDays(drift.quarterly), threshold: 100 },
+      ]
+    : [];
 
   const todayHabits = habits[habits.length - 1];
   const tasksToday = tasks.filter(
@@ -160,6 +183,17 @@ export default async function TodayPage() {
         <section className="card p-5">
           <div className="eyebrow mb-2">Gestern · Key Insight</div>
           <p className="serif text-base text-[var(--ink-2)]">{yesterday.key_insight}</p>
+        </section>
+      )}
+
+      {/* === CHARTS === */}
+      <section>
+        <EnergyMoodTrend data={dailies} />
+      </section>
+
+      {driftItems.length > 0 && (
+        <section>
+          <DriftIndicator items={driftItems} />
         </section>
       )}
     </div>

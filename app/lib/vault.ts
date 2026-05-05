@@ -56,6 +56,13 @@ export type Saeule = {
   lastUpdate?: string;
 };
 
+export type DailyFM = {
+  date: string;
+  energy: number | null;
+  mood: number | null;
+  key_insight: string | null;
+};
+
 export type Task = {
   id: string;
   title: string;
@@ -67,6 +74,8 @@ export type Task = {
   tags: string[];
   recurrence?: string;
   overdue?: boolean;
+  created?: string;          // ISO-Datum, für Burndown-Chart
+  last_completed?: string;   // ISO-Datum, für Velocity-Chart
 };
 
 export type Project = {
@@ -370,6 +379,8 @@ export async function readTasks(): Promise<Task[]> {
         tags: Array.isArray(meta.tags) ? meta.tags : [],
         recurrence: meta.recurrence,
         overdue: meta.due && meta.due < today,
+        created: meta.created ? String(meta.created) : undefined,
+        last_completed: meta.last_completed ? String(meta.last_completed) : undefined,
       });
     } catch {
       // skip parse errors
@@ -379,6 +390,51 @@ export async function readTasks(): Promise<Task[]> {
 }
 
 // ─── Projects ───────────────────────────────────────────────
+
+// ─── Dailies ────────────────────────────────────────────────
+
+/**
+ * Liest die letzten N Daily-Notes mit FM-Werten (energy/mood/key_insight).
+ * Für Energy/Mood-Trend-Chart auf der Heute-Page.
+ *
+ * @param days Anzahl Tage zurück (default 30)
+ * @returns Liste sortiert aufsteigend nach Datum
+ */
+export async function readDailies(days = 30): Promise<DailyFM[]> {
+  const dailyDir = join(VAULT_PATH, "10_Life", "daily");
+  const files = await safeReadDir(dailyDir);
+  const today = todayISO();
+  const cutoff = new Date(today);
+  cutoff.setDate(cutoff.getDate() - days);
+  const cutoffStr = cutoff.toISOString().slice(0, 10);
+  const out: DailyFM[] = [];
+  for (const f of files) {
+    if (!/^\d{4}-\d{2}-\d{2}\.md$/.test(f)) continue;
+    const date = f.replace(/\.md$/, "");
+    if (date < cutoffStr || date > today) continue;
+    const raw = await safeReadFile(join(dailyDir, f));
+    if (!raw) continue;
+    try {
+      const meta = matter(raw).data;
+      out.push({
+        date,
+        energy:
+          meta.energy === null || meta.energy === undefined
+            ? null
+            : Number(meta.energy),
+        mood:
+          meta.mood === null || meta.mood === undefined
+            ? null
+            : Number(meta.mood),
+        key_insight: meta.key_insight ?? null,
+      });
+    } catch {
+      // skip
+    }
+  }
+  out.sort((a, b) => (a.date < b.date ? -1 : 1));
+  return out;
+}
 
 /**
  * Lightweight: nur die Slugs aller Projekte (Folders mit README.md unter

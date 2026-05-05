@@ -1,4 +1,5 @@
 import { readWins } from "@/lib/vault";
+import { WinsFrequency } from "@/components/charts/wins-frequency";
 
 export const dynamic = "force-dynamic";
 
@@ -33,6 +34,11 @@ export default async function WinsPage() {
           <div className="eyebrow">Total</div>
           <div className="display text-3xl mt-1 num-mono">{wins.length}</div>
         </div>
+      </section>
+
+      {/* Frequenz-Heatmap */}
+      <section>
+        <WinsFrequency wins={wins} />
       </section>
 
       <section className="card p-5">

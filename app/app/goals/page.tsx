@@ -1,5 +1,6 @@
 import { readVision, readSaeulen, readDrift } from "@/lib/vault";
 import { daysUntilStichtag } from "@/lib/utils";
+import { GoalsProgress } from "@/components/charts/goals-progress";
 
 export const dynamic = "force-dynamic";
 
@@ -80,6 +81,13 @@ export default async function GoalsPage() {
               </div>
             ))}
           </div>
+        </section>
+      )}
+
+      {/* Säulen-Progress als Radial-Chart */}
+      {saeulen.length > 0 && (
+        <section>
+          <GoalsProgress saeulen={saeulen} />
         </section>
       )}
     </div>

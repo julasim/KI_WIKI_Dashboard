@@ -1,4 +1,5 @@
 import { readBooks } from "@/lib/vault";
+import { ReadingPace } from "@/components/charts/reading-pace";
 
 export const dynamic = "force-dynamic";
 
@@ -46,6 +47,11 @@ export default async function ReadingPage() {
       <Section title="Aktiv" items={aktiv} />
       <Section title="Geplant" items={geplant} />
       <Section title="Abgeschlossen" items={abgeschlossen} />
+
+      {/* Reading-Pace */}
+      <section>
+        <ReadingPace books={books} />
+      </section>
     </div>
   );
 }

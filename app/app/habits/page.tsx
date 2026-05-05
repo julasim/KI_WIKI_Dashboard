@@ -1,9 +1,13 @@
 import { readHabits, HABIT_KEYS } from "@/lib/vault";
+import { HabitsYearHeatmap } from "@/components/charts/habits-year-heatmap";
 
 export const dynamic = "force-dynamic";
 
 export default async function HabitsPage() {
-  const days = await readHabits(30);
+  const [days, yearDays] = await Promise.all([
+    readHabits(30),
+    readHabits(365),
+  ]);
   const todayISO = new Date().toISOString().slice(0, 10);
 
   // Streak pro Habit
@@ -70,6 +74,11 @@ export default async function HabitsPage() {
       <p className="text-xs text-[var(--ink-soft)]">
         30 Tage rückwärts. Quelle: <code>10_Life/goals/5y-2031/tracker/habits.md</code>
       </p>
+
+      {/* Year-Heatmap (GitHub-Style) */}
+      <section>
+        <HabitsYearHeatmap habits={yearDays} />
+      </section>
     </div>
   );
 }

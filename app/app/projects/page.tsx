@@ -1,10 +1,11 @@
-import { readProjects } from "@/lib/vault";
+import { readProjects, readTasks } from "@/lib/vault";
 import Link from "next/link";
+import { ProjectVelocity } from "@/components/charts/project-velocity";
 
 export const dynamic = "force-dynamic";
 
 export default async function ProjectsPage() {
-  const projects = await readProjects();
+  const [projects, tasks] = await Promise.all([readProjects(), readTasks()]);
   const active = projects.filter((p) => p.status === "active");
   const paused = projects.filter((p) => p.status === "paused");
   const archived = projects.filter((p) => p.status === "archived" || p.status === "completed");
@@ -58,6 +59,11 @@ export default async function ProjectsPage() {
       <Section title="Aktiv" items={active} />
       <Section title="Pausiert" items={paused} />
       <Section title="Archiv" items={archived} />
+
+      {/* Velocity-Chart */}
+      <section>
+        <ProjectVelocity tasks={tasks} weeks={4} />
+      </section>
     </div>
   );
 }
