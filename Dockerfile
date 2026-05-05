@@ -4,8 +4,11 @@
 # Stage 1: deps
 FROM node:24-alpine AS deps
 WORKDIR /build
-COPY app/package.json app/package-lock.json ./
-RUN npm ci --no-audit --no-fund
+COPY app/package.json app/package-lock.json* ./
+# `npm install` (statt `npm ci`) regeneriert lock-file falls package.json
+# neuer ist — robust gegenüber Out-of-Sync-Lock-Files. Sobald Lock-File
+# stable ist, kann auf `npm ci` zurück.
+RUN npm install --no-audit --no-fund
 
 # Stage 2: builder
 FROM node:24-alpine AS builder
@@ -29,6 +32,11 @@ ENV HOSTNAME=0.0.0.0
 COPY --from=builder /build/.next/standalone ./
 COPY --from=builder /build/.next/static ./.next/static
 COPY --from=builder /build/public ./public
+
+# Helper-Scripts (z.B. Password-Hash-Generator) + bcryptjs explizit
+# damit `docker compose exec dashboard node scripts/hash-password.mjs PW` läuft.
+COPY --from=builder /build/scripts ./scripts
+COPY --from=builder /build/node_modules/bcryptjs ./node_modules/bcryptjs
 
 # Läuft als root — Vault wird read-only gemountet (siehe docker-compose.yml),
 # daher kein Write-Risiko. Non-root-User würde Permission-Probleme bringen
