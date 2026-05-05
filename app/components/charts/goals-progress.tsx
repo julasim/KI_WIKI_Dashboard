@@ -70,9 +70,6 @@ export function GoalsProgress({ saeulen }: { saeulen: Saeule[] }) {
               borderRadius: 6,
               fontSize: 12,
             }}
-            formatter={(_v: number, _n: string, p: { payload: { name: string; status: string } }) =>
-              [p.payload.status, p.payload.name]
-            }
           />
           <Legend
             iconSize={10}
