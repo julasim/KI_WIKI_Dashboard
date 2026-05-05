@@ -1,6 +1,7 @@
 import { readVision, readSaeulen, readDrift } from "@/lib/vault";
 import { daysUntilStichtag } from "@/lib/utils";
 import { GoalsProgress } from "@/components/charts/goals-progress";
+import { GoalLogButton } from "@/components/goal-log-button";
 
 export const dynamic = "force-dynamic";
 
@@ -71,7 +72,14 @@ export default async function GoalsPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {saeulen.map((s) => (
               <div key={s.slug} className="card p-4">
-                <div className="serif text-base">{s.label}</div>
+                <div className="flex items-center justify-between gap-2">
+                  <div className="serif text-base">{s.label}</div>
+                  <GoalLogButton
+                    goal="5y-2031"
+                    subtype={`tracker/${s.slug}`}
+                    label="Eintrag"
+                  />
+                </div>
                 {s.kpi && (
                   <div className="text-sm text-[var(--ink-2)] mt-1.5">{s.kpi}</div>
                 )}

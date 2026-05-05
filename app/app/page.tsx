@@ -13,6 +13,7 @@ import {
 import { daysUntilStichtag, formatDateLongDe, weekdayDe } from "@/lib/utils";
 import { EnergyMoodTrend } from "@/components/charts/energy-mood-trend";
 import { DriftIndicator, type DriftItem } from "@/components/charts/drift-indicator";
+import { DailyFMForm } from "@/components/daily-fm-form";
 
 // Bei jedem Request frisch rendern — sonst werden im Docker-standalone-Build
 // die Pages zur Build-Time mit leerem Vault prerendert (Volume mountet erst zur
@@ -185,6 +186,16 @@ export default async function TodayPage() {
           <p className="serif text-base text-[var(--ink-2)]">{yesterday.key_insight}</p>
         </section>
       )}
+
+      {/* === HEUTE-TRACKING === */}
+      <section>
+        <DailyFMForm
+          date={todayISO}
+          initialEnergy={dailies.find((d) => d.date === todayISO)?.energy}
+          initialMood={dailies.find((d) => d.date === todayISO)?.mood}
+          initialInsight={dailies.find((d) => d.date === todayISO)?.key_insight}
+        />
+      </section>
 
       {/* === CHARTS === */}
       <section>

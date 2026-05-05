@@ -4,6 +4,7 @@ import { useTransition, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Check, Circle, Loader2 } from "lucide-react";
 import { actionTaskToggle } from "@/app/actions";
+import { useToast } from "./toast";
 import { cn } from "@/lib/utils";
 
 /**
@@ -21,6 +22,7 @@ export function TaskToggle({
   size?: number;
 }) {
   const router = useRouter();
+  const toast = useToast();
   const [pending, startTransition] = useTransition();
   const [optimistic, setOptimistic] = useState(status);
 
@@ -34,11 +36,12 @@ export function TaskToggle({
     startTransition(async () => {
       try {
         await actionTaskToggle(taskId, status);
+        toast.success(newStatus === "done" ? "Erledigt ✓" : "Wieder offen");
         router.refresh();
       } catch (err) {
         console.error(err);
         setOptimistic(status); // revert
-        alert("Fehler beim Status-Update: " + (err as Error).message);
+        toast.error("Status-Fehler: " + (err as Error).message);
       }
     });
   };

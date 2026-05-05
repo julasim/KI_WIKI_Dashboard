@@ -10,12 +10,19 @@ import {
   actionAppendDaily,
   actionLogWin,
 } from "@/app/actions";
+import { useToast } from "./toast";
 
 type Mode = null | "task" | "note" | "daily" | "win";
 
 /**
  * Floating-Action-Button unten rechts. Klick öffnet Menü mit 4 Quick-Adds.
  * Jede Aktion öffnet ein Modal-Dialog mit fokussiertem Form.
+ *
+ * Tastatur-Shortcuts (außerhalb von Input-Feldern):
+ *   n  →  Neuer Task
+ *   t  →  Tagebuch-Eintrag
+ *   w  →  Win loggen
+ *   N  →  Neue Notiz (Shift+n)
  *
  * @param projects Slugs aller Projekte (für Dropdown-Auswahl in Task/Note)
  */
@@ -28,6 +35,45 @@ export function QuickActions({ projects = [] }: { projects?: string[] }) {
     setMode(null);
   };
 
+  // Globale Shortcuts
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      // Skip wenn User gerade in Input/Textarea tippt
+      const target = e.target as HTMLElement;
+      const isEditing =
+        target.tagName === "INPUT" ||
+        target.tagName === "TEXTAREA" ||
+        target.tagName === "SELECT" ||
+        target.isContentEditable;
+      if (isEditing) return;
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+
+      // Wenn Modal offen, ESC schließt (das ist im Modal selbst gehandelt)
+      if (mode) return;
+
+      switch (e.key) {
+        case "n":
+          e.preventDefault();
+          setMode("task");
+          break;
+        case "N":
+          e.preventDefault();
+          setMode("note");
+          break;
+        case "t":
+          e.preventDefault();
+          setMode("daily");
+          break;
+        case "w":
+          e.preventDefault();
+          setMode("win");
+          break;
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [mode]);
+
   return (
     <>
       {/* FAB */}
@@ -38,21 +84,25 @@ export function QuickActions({ projects = [] }: { projects?: string[] }) {
               <ActionButton
                 icon={<ListTodo size={16} />}
                 label="Task"
+                shortcut="n"
                 onClick={() => setMode("task")}
               />
               <ActionButton
                 icon={<FileText size={16} />}
                 label="Note"
+                shortcut="⇧N"
                 onClick={() => setMode("note")}
               />
               <ActionButton
                 icon={<BookOpen size={16} />}
                 label="Tagebuch"
+                shortcut="t"
                 onClick={() => setMode("daily")}
               />
               <ActionButton
                 icon={<Trophy size={16} />}
                 label="Win"
+                shortcut="w"
                 onClick={() => setMode("win")}
               />
             </div>
@@ -94,15 +144,25 @@ function modeTitle(m: Mode): string {
 }
 
 function ActionButton({
-  icon, label, onClick,
-}: { icon: React.ReactNode; label: string; onClick: () => void }) {
+  icon, label, onClick, shortcut,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  onClick: () => void;
+  shortcut?: string;
+}) {
   return (
     <button
       onClick={onClick}
-      className="flex items-center gap-2 h-9 px-3 rounded-full bg-[var(--bg-2)] text-[var(--ink)] border hairline shadow-sm hover:bg-[var(--bg-3)] text-sm whitespace-nowrap"
+      className="flex items-center gap-2 h-9 pl-3 pr-2.5 rounded-full bg-[var(--bg-2)] text-[var(--ink)] border hairline shadow-sm hover:bg-[var(--bg-3)] text-sm whitespace-nowrap"
     >
       {icon}
-      {label}
+      <span>{label}</span>
+      {shortcut && (
+        <kbd className="num-mono text-[10px] text-[var(--ink-mute)] bg-[var(--bg)] border hairline rounded px-1 py-0.5">
+          {shortcut}
+        </kbd>
+      )}
     </button>
   );
 }
@@ -184,6 +244,7 @@ function TaskForm({
   onDone: () => void;
 }) {
   const router = useRouter();
+  const toast = useToast();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
@@ -191,13 +252,16 @@ function TaskForm({
     e.preventDefault();
     setError(null);
     const fd = new FormData(e.currentTarget);
+    const title = String(fd.get("title") || "");
     startTransition(async () => {
       try {
         await actionCreateTask(fd);
+        toast.success(`Task angelegt: ${title}`);
         router.refresh();
         onDone();
       } catch (err) {
         setError((err as Error).message);
+        toast.error("Task-Fehler: " + (err as Error).message);
       }
     });
   };
@@ -262,6 +326,7 @@ function NoteForm({
   onDone: () => void;
 }) {
   const router = useRouter();
+  const toast = useToast();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
@@ -269,13 +334,16 @@ function NoteForm({
     e.preventDefault();
     setError(null);
     const fd = new FormData(e.currentTarget);
+    const title = String(fd.get("title") || "");
     startTransition(async () => {
       try {
         await actionCreateNote(fd);
+        toast.success(`Notiz angelegt: ${title}`);
         router.refresh();
         onDone();
       } catch (err) {
         setError((err as Error).message);
+        toast.error("Notiz-Fehler: " + (err as Error).message);
       }
     });
   };
@@ -313,6 +381,7 @@ function NoteForm({
 
 function DailyForm({ onDone }: { onDone: () => void }) {
   const router = useRouter();
+  const toast = useToast();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
@@ -323,10 +392,12 @@ function DailyForm({ onDone }: { onDone: () => void }) {
     startTransition(async () => {
       try {
         await actionAppendDaily(fd);
+        toast.success("An Tagebuch angefügt");
         router.refresh();
         onDone();
       } catch (err) {
         setError((err as Error).message);
+        toast.error("Tagebuch-Fehler: " + (err as Error).message);
       }
     });
   };
@@ -362,6 +433,7 @@ function DailyForm({ onDone }: { onDone: () => void }) {
 
 function WinForm({ onDone }: { onDone: () => void }) {
   const router = useRouter();
+  const toast = useToast();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
@@ -372,10 +444,12 @@ function WinForm({ onDone }: { onDone: () => void }) {
     startTransition(async () => {
       try {
         await actionLogWin(fd);
+        toast.success("Win geloggt 🎉");
         router.refresh();
         onDone();
       } catch (err) {
         setError((err as Error).message);
+        toast.error("Win-Fehler: " + (err as Error).message);
       }
     });
   };

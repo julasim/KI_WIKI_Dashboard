@@ -4,6 +4,7 @@ import "./globals.css";
 import { Shell } from "@/components/shell";
 import { AutoRefresh } from "@/components/auto-refresh";
 import { SessionProvider } from "@/components/session-provider";
+import { ToastProvider } from "@/components/toast";
 import { QuickActionsGate } from "@/components/quick-actions-gate";
 import { listProjectSlugs } from "@/lib/vault";
 
@@ -37,9 +38,11 @@ export default async function RootLayout({
     >
       <body className="min-h-full">
         <SessionProvider>
-          <AutoRefresh />
-          <Shell>{children}</Shell>
-          <QuickActionsGate projects={projects} />
+          <ToastProvider>
+            <AutoRefresh />
+            <Shell>{children}</Shell>
+            <QuickActionsGate projects={projects} />
+          </ToastProvider>
         </SessionProvider>
       </body>
     </html>
