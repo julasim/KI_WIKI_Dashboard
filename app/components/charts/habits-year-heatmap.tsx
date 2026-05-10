@@ -1,6 +1,9 @@
 "use client";
 
-import { HABIT_KEYS, type HabitDay, type HabitKey } from "@/lib/vault";
+// Wichtig: NICHT aus "@/lib/vault" importieren — vault.ts zieht
+// `node:fs/promises` rein, das in Client-Components (Next 16/Turbopack)
+// nicht erlaubt ist. habits-shared.ts ist client-safe.
+import { HABIT_KEYS, type HabitDay, type HabitKey } from "@/lib/habits-shared";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
