@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # install.sh — Erst-Installation Dashboard auf VPS
-# Annahme: läuft als root oder sudo-User in /opt/dashboard
+# Annahme: läuft als root oder sudo-User in /opt/KI_WIKI_Dashboard
 # Verwendung:
 #   cd /opt
-#   git clone https://github.com/julasim/KI_WIKI_Dashboard.git dashboard
-#   cd dashboard
+#   git clone https://github.com/julasim/KI_WIKI_Dashboard.git KI_WIKI_Dashboard
+#   cd KI_WIKI_Dashboard
 #   bash install.sh
 
 set -euo pipefail
@@ -54,4 +54,4 @@ echo "✓ Dashboard läuft."
 echo "  Lokal:    http://localhost:5001"
 echo "  Network:  http://$IP:5001"
 echo
-echo "Update später mit: cd /opt/dashboard && bash update.sh"
+echo "Update später mit: cd /opt/KI_WIKI_Dashboard && bash update.sh"

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # update.sh — Dashboard-Update auf VPS
-# Verwendung: cd /opt/dashboard && bash update.sh
+# Verwendung: cd /opt/KI_WIKI_Dashboard && bash update.sh
 
 set -euo pipefail
 cd "$(dirname "$0")"

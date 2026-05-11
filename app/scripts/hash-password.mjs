@@ -13,7 +13,7 @@
  *   ── RAW HASH (zum Vergleich/Debug) ──────────────
  *   $2a$12$cX6DUwRxSJgCua6n7LmwIuVPb2eZktXJAfmwYG7d/VLRMuVVC3jU.
  *
- *   ── ZEILE FÜR .env (in /opt/dashboard/.env) ─────
+ *   ── ZEILE FÜR .env (in /opt/KI_WIKI_Dashboard/.env) ─────
  *   DASHBOARD_USER_PASSWORD_HASH=$$2a$$12$$cX6DUwRxSJgCua6n7LmwIuVPb2eZktXJAfmwYG7d/VLRMuVVC3jU.
  *
  * Warum das $$-Escape?
@@ -38,12 +38,12 @@ console.log("");
 console.log("── RAW HASH (zum Vergleich/Debug) ──────────────");
 console.log(hash);
 console.log("");
-console.log("── ZEILE FÜR .env (in /opt/dashboard/.env) ─────");
+console.log("── ZEILE FÜR .env (in /opt/KI_WIKI_Dashboard/.env) ─────");
 console.log(`DASHBOARD_USER_PASSWORD_HASH=${escaped}`);
 console.log("");
 console.log(
-  "  Diese Zeile EXAKT in /opt/dashboard/.env eintragen (überschreibt evtl.\n" +
+  "  Diese Zeile EXAKT in /opt/KI_WIKI_Dashboard/.env eintragen (überschreibt evtl.\n" +
     "  bestehende DASHBOARD_USER_PASSWORD_HASH-Zeile). Danach:\n" +
-    "    cd /opt/ki-os && docker compose up -d --force-recreate dashboard",
+    "    cd /opt/KI_WIKI_Stack && docker compose up -d --force-recreate dashboard",
 );
 console.log("");
