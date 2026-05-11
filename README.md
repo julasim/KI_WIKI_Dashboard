@@ -80,7 +80,7 @@ bash install.sh
 ### Updates
 
 ```bash
-cd /opt/dashboard
+cd /opt/KI_WIKI_Dashboard
 bash update.sh
 ```
 
@@ -90,8 +90,8 @@ bash update.sh
 
 ```
 /opt/
-├── bot/            ← KI_WIKI_OS Repo (Bot-Container :8080)
-├── dashboard/      ← KI_WIKI_Dashboard Repo (Dashboard-Container :5001)
+├── KI_WIKI_OS/         ← Bot-Container :8080
+├── KI_WIKI_Dashboard/  ← Dashboard-Container :5001
 └── vault/
     └── KI_WIKI_Vault/   ← read-write für Bot, read-only für Dashboard
 ```
