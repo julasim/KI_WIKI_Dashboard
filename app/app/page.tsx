@@ -8,8 +8,8 @@ import {
   readDailies,
   readDrift,
   computeStreak,
-  HABIT_KEYS,
 } from "@/lib/vault";
+import { HABIT_KEYS } from "@/lib/habits-shared";
 import { daysUntilStichtag, formatDateLongDe, weekdayDe } from "@/lib/utils";
 import { EnergyMoodTrend } from "@/components/charts/energy-mood-trend";
 import { DriftIndicator, type DriftItem } from "@/components/charts/drift-indicator";

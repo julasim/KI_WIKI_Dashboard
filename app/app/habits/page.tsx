@@ -1,4 +1,5 @@
-import { readHabits, HABIT_KEYS } from "@/lib/vault";
+import { readHabits } from "@/lib/vault";
+import { HABIT_KEYS } from "@/lib/habits-shared";
 import { HabitsYearHeatmap } from "@/components/charts/habits-year-heatmap";
 
 export const dynamic = "force-dynamic";
