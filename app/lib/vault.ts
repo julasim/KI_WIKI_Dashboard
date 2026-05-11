@@ -18,15 +18,15 @@ const GOAL_BASE = join(VAULT_PATH, "10_Life", "goals", GOAL_SLUG);
 
 // ─── Types ──────────────────────────────────────────────────
 // HABIT_KEYS + Habit-Types liegen in habits-shared.ts (client-safe).
-// Reexport hier damit existierender Import-Pfad `from "@/lib/vault"`
-// fuer Server-Components weiterhin funktioniert.
-
-export {
-  HABIT_KEYS,
-  type HabitStatus,
-  type HabitKey,
-  type HabitDay,
-} from "./habits-shared";
+// Importer muessen DIREKT aus "@/lib/habits-shared" importieren — kein
+// Re-Export via vault.ts mehr.
+//
+// Hintergrund: Turbopack/Next-16 produziert beim Re-Export einen kaputten
+// SSR-Chunk (HABIT_KEYS is not defined zur Runtime). Vermutlich Tree-Shake-
+// Bug bei "value-and-type"-Reexport aus einem Modul das in zwei Kontexten
+// (Server + Client) genutzt wird. Workaround: direkter Import.
+import type { HabitStatus, HabitKey, HabitDay } from "./habits-shared";
+import { HABIT_KEYS } from "./habits-shared";
 
 export type SportSession = { date: string; art: "cardio" | "kraft"; dauer: number; notiz: string };
 
