@@ -13,6 +13,22 @@ import { join } from "node:path";
 import matter from "gray-matter";
 
 const VAULT_PATH = process.env.VAULT_PATH ?? "/vault";
+
+// gray-matter parsed unquoted YAML-Datumsfelder (z.B. `started: 2026-05-15`)
+// als JS-Date — direkt in JSX gerendert crasht das React. Diese Helper
+// normalisieren Frontmatter-Werte auf String, bevor sie ins UI gehen.
+function coerceStr(v: unknown): string | undefined {
+  if (v == null) return undefined;
+  if (typeof v === "string") return v;
+  if (v instanceof Date) return v.toISOString().slice(0, 10);
+  return String(v);
+}
+function coerceDateStr(v: unknown): string | undefined {
+  if (v == null) return undefined;
+  if (v instanceof Date) return v.toISOString().slice(0, 10);
+  if (typeof v === "string") return v;
+  return String(v);
+}
 const GOAL_SLUG = "5y-2031";
 const GOAL_BASE = join(VAULT_PATH, "10_Life", "goals", GOAL_SLUG);
 
@@ -474,11 +490,11 @@ export async function readProjects(): Promise<Project[]> {
       const stats = await stat(readmePath);
       out.push({
         slug,
-        title: meta.title ?? slug,
-        status: meta.status ?? "active",
-        started: meta.started,
-        parent: meta.parent,
-        tags: Array.isArray(meta.tags) ? meta.tags : [],
+        title: coerceStr(meta.title) ?? slug,
+        status: (coerceStr(meta.status) as Project["status"]) ?? "active",
+        started: coerceDateStr(meta.started),
+        parent: coerceStr(meta.parent),
+        tags: Array.isArray(meta.tags) ? meta.tags.map((t) => coerceStr(t)).filter(Boolean) as string[] : [],
         taskCounts,
         lastActivity: stats.mtime.toISOString().slice(0, 10),
       });
@@ -546,12 +562,12 @@ function parseProjectFile(raw: string, filename: string, subpath?: string): RawP
     const parsed = matter(raw);
     const meta = parsed.data;
     return {
-      id: meta.id ?? filename.replace(/\.md$/, ""),
-      title: meta.title ?? filename.replace(/\.md$/, ""),
-      date: meta.date,
+      id: coerceStr(meta.id) ?? filename.replace(/\.md$/, ""),
+      title: coerceStr(meta.title) ?? filename.replace(/\.md$/, ""),
+      date: coerceDateStr(meta.date),
       body: parsed.content.trim(),
-      tags: Array.isArray(meta.tags) ? meta.tags : [],
-      attendees: Array.isArray(meta.attendees) ? meta.attendees : [],
+      tags: Array.isArray(meta.tags) ? meta.tags.map((t) => coerceStr(t)).filter(Boolean) as string[] : [],
+      attendees: Array.isArray(meta.attendees) ? meta.attendees.map((a) => coerceStr(a)).filter(Boolean) as string[] : [],
       subpath,
     };
   } catch {
