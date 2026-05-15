@@ -138,14 +138,12 @@ export async function actionUpdateDailyFM(formData: FormData) {
   const mood = String(formData.get("mood") || "").trim();
   const key_insight = String(formData.get("key_insight") || "").trim();
 
-  const updates: Record<string, unknown> = {};
-  if (energy) updates.energy = Number(energy);
-  if (mood) updates.mood = Number(mood);
-  if (key_insight) updates.key_insight = key_insight;
-  // Leere Felder = null setzen (löscht das Feld via FM-merge)
-  if (!energy) updates.energy = null;
-  if (!mood) updates.mood = null;
-  if (!key_insight) updates.key_insight = null;
+  // Leere Felder als null → MCP edit_file entfernt das Feld via FM-merge
+  const updates: Record<string, unknown> = {
+    energy: energy ? Number(energy) : null,
+    mood: mood ? Number(mood) : null,
+    key_insight: key_insight || null,
+  };
 
   const result = await mcpEditFile(`10_Life/daily/${date}.md`, {
     frontmatter_updates: updates,
